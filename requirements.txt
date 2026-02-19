@@ -1,0 +1,7 @@
+PySide2==5.15.2
+pywin32>=305
+pycdlib>=1.14.0
+reportlab>=3.5,<4.0
+pefile>=2023.2.7
+pyinstaller>=6.0
+pyminizip>=0.2.6
