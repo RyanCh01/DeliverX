@@ -30,22 +30,23 @@ class ISOTab(QWidget):
         content_layout.setContentsMargins(20, 20, 20, 20)
         content_layout.setSpacing(12)
 
-        # 标题
-        title = QLabel("ISO/IMG 打包器")
+        # Title
+        title = QLabel("ISO/IMG Packager")
         title.setObjectName("titleLabel")
         content_layout.addWidget(title)
 
         subtitle = QLabel(
-            "将 Payload 和诱饵文件打包为 ISO 镜像。"
-            "目标双击 ISO 后 Windows 自动挂载，挂载后的文件不携带 MOTW 标记，"
-            "可绕过 SmartScreen 拦截和 Office 宏禁用策略。"
+            "Package payload and decoy files into an ISO image. "
+            "When the target double-clicks the ISO, Windows auto-mounts it. "
+            "Files inside the mounted ISO do not carry the MOTW flag, "
+            "bypassing SmartScreen and Office macro disable policies."
         )
         subtitle.setObjectName("subtitleLabel")
         subtitle.setWordWrap(True)
         content_layout.addWidget(subtitle)
 
-        # --- 文件列表区 ---
-        files_group = QGroupBox("打包文件列表")
+        # --- File List ---
+        files_group = QGroupBox("Files to Pack")
         files_layout = QVBoxLayout()
 
         self.file_list = QListWidget()
@@ -57,34 +58,34 @@ class ISOTab(QWidget):
         )
         files_layout.addWidget(self.file_list)
 
-        # 按钮行
+        # Button row
         btn_row = QHBoxLayout()
 
-        self.add_file_btn = QPushButton("➕ 添加文件")
+        self.add_file_btn = QPushButton("➕ Add File")
         self.add_file_btn.clicked.connect(self.add_file)
         btn_row.addWidget(self.add_file_btn)
 
-        self.add_lnk_btn = QPushButton("🔗 添加 LNK（从 outputs/）")
+        self.add_lnk_btn = QPushButton("🔗 Add LNK (from outputs/)")
         self.add_lnk_btn.clicked.connect(self.add_lnk_from_outputs)
         btn_row.addWidget(self.add_lnk_btn)
 
-        self.remove_file_btn = QPushButton("❌ 移除选中")
+        self.remove_file_btn = QPushButton("❌ Remove Selected")
         self.remove_file_btn.clicked.connect(self.remove_file)
         btn_row.addWidget(self.remove_file_btn)
 
-        self.clear_files_btn = QPushButton("🗑 清空列表")
+        self.clear_files_btn = QPushButton("🗑 Clear List")
         self.clear_files_btn.clicked.connect(self.clear_files)
         btn_row.addWidget(self.clear_files_btn)
 
         files_layout.addLayout(btn_row)
 
-        # 在ISO中重命名
+        # Rename in ISO
         rename_row = QHBoxLayout()
-        rename_row.addWidget(QLabel("ISO内文件名:"))
+        rename_row.addWidget(QLabel("Name in ISO:"))
         self.rename_input = QLineEdit()
-        self.rename_input.setPlaceholderText("选中文件后可修改其在ISO中显示的文件名")
+        self.rename_input.setPlaceholderText("Select a file above, then change its display name in the ISO")
         rename_row.addWidget(self.rename_input, 1)
-        self.rename_btn = QPushButton("✏️ 重命名")
+        self.rename_btn = QPushButton("✏️ Rename")
         self.rename_btn.clicked.connect(self.rename_selected)
         rename_row.addWidget(self.rename_btn)
         files_layout.addLayout(rename_row)
@@ -92,22 +93,22 @@ class ISOTab(QWidget):
         files_group.setLayout(files_layout)
         content_layout.addWidget(files_group)
 
-        # --- ISO 设置区 ---
-        settings_group = QGroupBox("ISO 设置")
+        # --- ISO Settings ---
+        settings_group = QGroupBox("ISO Settings")
         settings_layout = QVBoxLayout()
 
         vol_row = QHBoxLayout()
-        vol_row.addWidget(QLabel("卷标名称:"))
+        vol_row.addWidget(QLabel("Volume Label:"))
         self.volume_input = QLineEdit()
-        self.volume_input.setPlaceholderText("挂载后显示的磁盘名称")
+        self.volume_input.setPlaceholderText("Disk name shown after mounting")
         self.volume_input.setText("DOCUMENTS")
         vol_row.addWidget(self.volume_input, 1)
         settings_layout.addLayout(vol_row)
 
         out_row = QHBoxLayout()
-        out_row.addWidget(QLabel("输出文件名:"))
+        out_row.addWidget(QLabel("Output Filename:"))
         self.output_input = QLineEdit()
-        self.output_input.setPlaceholderText("ISO 输出文件名")
+        self.output_input.setPlaceholderText("ISO output filename")
         self.output_input.setText("demo.iso")
         out_row.addWidget(self.output_input, 1)
         settings_layout.addLayout(out_row)
@@ -115,20 +116,20 @@ class ISOTab(QWidget):
         settings_group.setLayout(settings_layout)
         content_layout.addWidget(settings_group)
 
-        # --- 使用说明区 ---
-        guide_group = QGroupBox("攻击链路说明")
+        # --- Attack Chain Guide ---
+        guide_group = QGroupBox("Attack Chain Guide")
         guide_layout = QVBoxLayout()
         guide_text = QLabel(
-            "推荐攻击链路：\n"
-            "1. 使用 LNK 模块生成伪装快捷方式\n"
-            "2. 将 LNK + Payload + 诱饵文档添加到文件列表\n"
-            "3. 生成 ISO 镜像\n"
-            "4. 通过邮件/网盘发送 ISO 给目标\n"
-            "5. 目标双击 ISO → 自动挂载 → 看到 LNK（伪装为文档）→ 双击执行\n\n"
-            "⚠️ ISO 内文件不携带 MOTW 标记，可绕过：\n"
-            "   • Windows SmartScreen 拦截\n"
-            "   • Office 宏自动禁用策略\n"
-            "   • 部分 EDR 的文件来源检测"
+            "Recommended attack chain:\n"
+            "1. Use the LNK module to generate a disguised shortcut\n"
+            "2. Add LNK + Payload + decoy document to the file list\n"
+            "3. Generate the ISO image\n"
+            "4. Send the ISO to the target via email or file sharing\n"
+            "5. Target double-clicks ISO -> auto-mount -> sees LNK (disguised as document) -> double-clicks to execute\n\n"
+            "⚠️ Files inside ISO do not carry MOTW, bypassing:\n"
+            "   • Windows SmartScreen\n"
+            "   • Office macro auto-disable policies\n"
+            "   • Some EDR file-origin detection"
         )
         guide_text.setObjectName("subtitleLabel")
         guide_text.setWordWrap(True)
@@ -136,13 +137,13 @@ class ISOTab(QWidget):
         guide_group.setLayout(guide_layout)
         content_layout.addWidget(guide_group)
 
-        # --- 输出预览区 ---
-        preview_group = QGroupBox("输出信息")
+        # --- Output Preview ---
+        preview_group = QGroupBox("Output")
         preview_layout = QVBoxLayout()
         self.output_text = QTextEdit()
         self.output_text.setReadOnly(True)
         self.output_text.setMaximumHeight(150)
-        self.output_text.setPlaceholderText("生成后的信息将显示在这里...")
+        self.output_text.setPlaceholderText("Generated output info will appear here...")
         self.output_text.setStyleSheet(
             "font-family: 'Consolas','JetBrains Mono',monospace; font-size: 12px;"
         )
@@ -154,13 +155,13 @@ class ISOTab(QWidget):
         scroll_area.setWidget(scroll_content)
         main_layout.addWidget(scroll_area, 1)
 
-        # --- 底部固定栏 ---
+        # --- Bottom Bar ---
         bottom_bar = QWidget()
         bottom_bar.setObjectName("bottomBar")
         bottom_layout = QHBoxLayout(bottom_bar)
         bottom_layout.setContentsMargins(20, 12, 20, 12)
 
-        self.generate_btn = QPushButton("🚀 生成 ISO 镜像")
+        self.generate_btn = QPushButton("🚀 Generate ISO Image")
         self.generate_btn.setObjectName("primaryButton")
         self.generate_btn.setMinimumHeight(40)
         self.generate_btn.setMinimumWidth(160)
@@ -176,7 +177,7 @@ class ISOTab(QWidget):
 
     def add_file(self):
         file_paths, _ = QFileDialog.getOpenFileNames(
-            self, "选择要打包的文件", "", "所有文件 (*.*)"
+            self, "Select files to pack", "", "All Files (*.*)"
         )
         for path in file_paths:
             name = os.path.basename(path)
@@ -191,12 +192,12 @@ class ISOTab(QWidget):
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "outputs"
         )
         if not os.path.exists(outputs_dir):
-            QMessageBox.warning(self, "提示", "outputs 目录不存在")
+            QMessageBox.warning(self, "Notice", "outputs directory does not exist")
             return
 
         lnk_files = [f for f in os.listdir(outputs_dir) if f.endswith('.lnk')]
         if not lnk_files:
-            QMessageBox.warning(self, "提示", "outputs 目录中没有 LNK 文件")
+            QMessageBox.warning(self, "Notice", "No LNK files found in outputs directory")
             return
 
         for lnk in lnk_files:
@@ -229,7 +230,7 @@ class ISOTab(QWidget):
     def generate(self):
         if not self.files_to_pack:
             self.status_label.setStyleSheet("color: #e94560; font-weight: bold;")
-            self.status_label.setText("❌ 请先添加要打包的文件")
+            self.status_label.setText("❌ Please add files to pack first")
             return
 
         volume = self.volume_input.text().strip() or "DOCUMENTS"
@@ -241,7 +242,7 @@ class ISOTab(QWidget):
 
         if success:
             self.status_label.setStyleSheet("color: #00b894; font-weight: bold;")
-            self.status_label.setText("✅ ISO 生成成功")
+            self.status_label.setText("✅ ISO generated successfully")
             self.output_text.setText(message)
         else:
             self.status_label.setStyleSheet("color: #e94560; font-weight: bold;")

@@ -9,38 +9,38 @@ def generate_pdf(url, template_mode="custom", custom_title="", custom_body="",
                  output_filename="phishing.pdf"):
     try:
         if not url:
-            return False, "请输入目标 URL"
+            return False, "Please enter a target URL"
         
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
         
-        # 获取模板内容
+        # Get template content
         if template_mode == "template1":
             title, body_lines = _get_template1()
         elif template_mode == "template2":
             title, body_lines = _get_template2()
         else:
-            title = custom_title or "通知"
-            body_text = custom_body or "请点击查看文档。"
+            title = custom_title or "Notice"
+            body_text = custom_body or "Please click to view the document."
             body_lines = body_text.split('\n')
         
         output_path = os.path.join(OUTPUT_DIR, output_filename)
         
-        # 尝试使用 reportlab（支持中文）
+        # Try reportlab first (supports CJK fonts)
         try:
             return _generate_pdf_reportlab(url, title, body_lines, output_path)
         except ImportError:
             pass
         
-        # 回退：手工 PDF（仅支持英文）
+        # Fallback: manual PDF construction (ASCII only)
         return _generate_pdf_manual(url, title, body_lines, output_path)
         
     except Exception as e:
-        return False, f"生成 PDF 失败: {str(e)}"
+        return False, f"Failed to generate PDF: {str(e)}"
 
 
 def _generate_pdf_reportlab(url, title, body_lines, output_path):
-    """使用 reportlab 生成支持中文的 PDF"""
+    """Generate PDF using reportlab with font auto-detection"""
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.colors import HexColor
     from reportlab.pdfgen import canvas
@@ -51,7 +51,7 @@ def _generate_pdf_reportlab(url, title, body_lines, output_path):
     width, height = A4
     c = canvas.Canvas(output_path, pagesize=A4)
     
-    # 注册中文字体
+    # Register system font
     font_name = 'Helvetica'
     font_name_bold = 'Helvetica-Bold'
     
@@ -82,17 +82,17 @@ def _generate_pdf_reportlab(url, title, body_lines, output_path):
             except Exception:
                 continue
     
-    # 绘制标题
+    # Draw title
     c.setFont(font_name_bold if font_name_bold != font_name else font_name, 18)
     c.setFillColor(HexColor('#003380'))
     c.drawString(72, height - 72, title)
     
-    # 分隔线
+    # Separator line
     c.setStrokeColor(HexColor('#cccccc'))
     c.setLineWidth(1)
     c.line(72, height - 82, width - 72, height - 82)
     
-    # 正文
+    # Body text
     c.setFont(font_name, 11)
     c.setFillColor(HexColor('#333333'))
     
@@ -103,52 +103,52 @@ def _generate_pdf_reportlab(url, title, body_lines, output_path):
         c.drawString(72, y, line.strip())
         y -= 18
     
-    # 点击提示
+    # Click prompt
     c.setFont(font_name, 13)
     c.setFillColor(HexColor('#0055cc'))
-    click_text = ">>> 点击此处查看文档 <<<"
+    click_text = ">>> Click here to view the document <<<"
     c.drawString(72, 120, click_text)
     
-    # 下划线
+    # Underline
     c.setStrokeColor(HexColor('#0055cc'))
     c.setLineWidth(0.5)
     tw = c.stringWidth(click_text, font_name, 13)
     c.line(72, 116, 72 + tw, 116)
     
-    # 日期
+    # Date
     c.setFont(font_name, 9)
     c.setFillColor(HexColor('#999999'))
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    c.drawString(72, 80, f"生成日期: {date_str}")
+    c.drawString(72, 80, f"Generated: {date_str}")
     
-    # 全页透明链接 - 使用 reportlab 的 linkURL 方法
+    # Full-page transparent link using reportlab's linkURL
     c.linkURL(url, (0, 0, width, height), relative=0,
               Border='[0 0 0]')
     
     c.save()
     
-    return True, f"PDF 已生成: {output_path}"
+    return True, f"PDF generated: {output_path}"
 
 
 def _generate_pdf_manual(url, title, body_lines, output_path):
-    """手工构建 PDF（不支持中文，作为回退方案）"""
+    """Manual PDF construction (ASCII only, fallback)"""
     
     content_lines = []
     content_lines.append('BT')
     
-    # 标题
+    # Title
     content_lines.append('/F2 18 Tf')
     content_lines.append('0 0 0.8 rg')
     content_lines.append('72 750 Td')
     content_lines.append(f'({_pdf_escape(title)}) Tj')
     content_lines.append('ET')
     
-    # 分隔线
+    # Separator line
     content_lines.append('0.8 0.8 0.8 RG')
     content_lines.append('1 w')
     content_lines.append('72 738 m 523 738 l S')
     
-    # 正文
+    # Body text
     content_lines.append('BT')
     content_lines.append('/F1 11 Tf')
     content_lines.append('0.2 0.2 0.2 rg')
@@ -168,7 +168,7 @@ def _generate_pdf_manual(url, title, body_lines, output_path):
     
     content_lines.append('ET')
     
-    # 点击提示
+    # Click prompt
     content_lines.append('BT')
     content_lines.append('/F2 13 Tf')
     content_lines.append('0 0 0.9 rg')
@@ -176,12 +176,12 @@ def _generate_pdf_manual(url, title, body_lines, output_path):
     content_lines.append('(>>> Click Here to View Document <<<) Tj')
     content_lines.append('ET')
     
-    # 下划线
+    # Underline
     content_lines.append('0 0 0.9 RG')
     content_lines.append('0.5 w')
     content_lines.append('72 116 m 340 116 l S')
     
-    # 日期
+    # Date
     content_lines.append('BT')
     content_lines.append('/F1 9 Tf')
     content_lines.append('0.5 0.5 0.5 rg')
@@ -192,7 +192,7 @@ def _generate_pdf_manual(url, title, body_lines, output_path):
     
     content_stream = '\n'.join(content_lines)
     
-    # PDF 对象结构
+    # PDF object structure
     pdf_objects = []
     
     pdf_objects.append(
@@ -243,7 +243,7 @@ def _generate_pdf_manual(url, title, body_lines, output_path):
     with open(output_path, 'w', encoding='latin-1') as f:
         f.write(pdf_data)
     
-    return True, f"PDF 已生成（英文回退模式）: {output_path}"
+    return True, f"PDF generated (ASCII fallback): {output_path}"
 
 
 def _pdf_escape(text):
@@ -254,64 +254,65 @@ def _pdf_escape(text):
 
 
 def _get_template1():
-    """模板1：安全验证通知"""
-    title = "账户安全验证通知"
+    """Template 1: Account Security Verification Notice"""
+    title = "Account Security Verification Notice"
     body_lines = [
         "",
-        "尊敬的用户：",
+        "Dear User,",
         "",
-        "我们的安全系统检测到您的账户存在异常登录行为，",
-        "需要您立即进行身份验证。",
+        "Our security system has detected unusual login activity",
+        "on your account. Immediate identity verification is required.",
         "",
-        "根据最新的安全策略更新，所有员工须在 24 小时",
-        "内完成身份验证操作。",
+        "Per the latest security policy update, all employees must",
+        "complete identity verification within 24 hours.",
         "",
-        "未完成验证可能导致账户被临时冻结，届时将无法",
-        "访问企业内部系统和邮箱。",
-        "",
-        "",
-        "请点击本页面任意位置进行安全验证。",
+        "Failure to verify may result in temporary account suspension,",
+        "preventing access to internal systems and email.",
         "",
         "",
-        "如非本人操作，请立即联系 IT 安全部门。",
+        "Please click anywhere on this page to proceed with verification.",
         "",
-        "此致",
-        "IT 安全管理部",
+        "",
+        "If this was not initiated by you, contact IT Security immediately.",
+        "",
+        "Regards,",
+        "IT Security Department",
     ]
     return title, body_lines
 
 
 def _get_template2():
-    """模板2：文件预览失败"""
-    title = "文档预览失败"
+    """Template 2: File Preview Failed"""
+    title = "Document Preview Failed"
     body_lines = [
         "",
-        "您正在查看的文档无法在当前 PDF 阅读器中显示。",
+        "The document you are trying to view cannot be displayed",
+        "in the current PDF reader.",
         "",
-        "可能的原因：",
+        "Possible reasons:",
         "",
-        "  1. 文档已启用加密保护",
-        "  2. 当前 PDF 阅读器版本不兼容",
-        "  3. 文件格式受限",
-        "",
-        "",
-        "如需查看完整文档内容，请点击本页面任意位置，",
-        "通过在线文档查看器打开。",
+        "  1. The document has encryption protection enabled",
+        "  2. The current PDF reader version is incompatible",
+        "  3. The file format is restricted",
         "",
         "",
-        "注意：您可能需要使用组织账户登录后才能",
-        "访问此文档。",
+        "To view the full document, please click anywhere on this page",
+        "to open it in the online document viewer.",
         "",
-        "如问题持续存在，请联系文档所有者或 IT 支持。",
         "",
-        "此通知由系统自动生成。",
+        "Note: You may need to sign in with your organization account",
+        "to access this document.",
+        "",
+        "If the issue persists, contact the document owner or IT support.",
+        "",
+        "This notice was automatically generated by the system.",
     ]
     return title, body_lines
 
 
 def get_template_list():
     return [
-        "安全验证通知（诱导用户进行身份验证）",
-        "文件预览失败（诱导用户点击在线查看）",
-        "自定义内容",
+        "Security Verification Notice (lure user to verify identity)",
+        "File Preview Failed (lure user to click online viewer)",
+        "Custom Content",
     ]

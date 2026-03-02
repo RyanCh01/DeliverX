@@ -35,23 +35,23 @@ class HTMLTab(QWidget):
         title_label = QLabel("HTML Smuggling Generator")
         title_label.setObjectName("titleLabel")
         header_layout.addWidget(title_label) 
-        subtitle_label = QLabel("将任意文件 Base64 编码嵌入 HTML，绕过网络边界检测")
+        subtitle_label = QLabel("Embed any file as Base64-encoded data in HTML to bypass network boundary detection")
         subtitle_label.setObjectName("subtitleLabel")
         header_layout.addWidget(subtitle_label)
         layout.addLayout(header_layout)
 
         # --- Configuration Section ---
-        config_group = QGroupBox("攻击配置")
+        config_group = QGroupBox("Attack Configuration")
         config_layout = QFormLayout()
         config_layout.setSpacing(12)
         
-        # Mode Selector (3 modes only, no remote fetch)
+        # Mode Selector
         self.htmlsm_mode_selector = QComboBox()
         self.htmlsm_mode_selector.addItems([
-            "自动下载 (Auto Download)",
-            "点击任意位置下载 (Click Anywhere)"
+            "Auto Download",
+            "Click Anywhere to Download"
         ])
-        config_layout.addRow(QLabel("触发模式 (Trigger Mode):"), self.htmlsm_mode_selector)
+        config_layout.addRow(QLabel("Trigger Mode:"), self.htmlsm_mode_selector)
         
         # Encoding Selector
         self.htmlsm_encoding_selector = QComboBox()
@@ -62,97 +62,97 @@ class HTMLTab(QWidget):
             "Chunked Shuffle + Base64"
         ])
         self.htmlsm_encoding_selector.currentIndexChanged.connect(self.on_encoding_changed)
-        self.htmlsm_encoding_label = QLabel("编码方式 (Encoding):")
+        self.htmlsm_encoding_label = QLabel("Encoding:")
         config_layout.addRow(self.htmlsm_encoding_label, self.htmlsm_encoding_selector)
 
         # XOR Key Length
         self.htmlsm_key_length = QLineEdit()
         self.htmlsm_key_length.setText("16")
         self.htmlsm_key_length.setPlaceholderText("8-64")
-        self.htmlsm_key_length_label = QLabel("密钥长度 (Key Length):")
+        self.htmlsm_key_length_label = QLabel("Key Length:")
         config_layout.addRow(self.htmlsm_key_length_label, self.htmlsm_key_length)
         
         # Chunk Size
         self.htmlsm_chunk_size = QLineEdit()
         self.htmlsm_chunk_size.setText("4096")
         self.htmlsm_chunk_size.setPlaceholderText("Bytes (e.g. 4096)")
-        self.htmlsm_chunk_size_label = QLabel("分块大小 (Chunk Size):")
+        self.htmlsm_chunk_size_label = QLabel("Chunk Size:")
         config_layout.addRow(self.htmlsm_chunk_size_label, self.htmlsm_chunk_size)
 
         # File Selection
         self.htmlsm_file_input = QLineEdit()
-        self.htmlsm_file_input.setPlaceholderText("点击右侧按钮选择文件...")
-        self.htmlsm_browse_btn = QPushButton("📂 浏览")
+        self.htmlsm_file_input.setPlaceholderText("Click Browse to select a file...")
+        self.htmlsm_browse_btn = QPushButton("📂 Browse")
         self.htmlsm_browse_btn.setFixedWidth(80)
         self.htmlsm_browse_btn.clicked.connect(self.select_file)
         
         file_layout = list_to_hbox([self.htmlsm_file_input, self.htmlsm_browse_btn])
-        config_layout.addRow(QLabel("嵌入文件 (Payload File):"), file_layout)
+        config_layout.addRow(QLabel("Payload File:"), file_layout)
         
         # Download Filename
         self.htmlsm_output_filename = QLineEdit()
         self.htmlsm_output_filename.setText("malicious.iso")
-        self.htmlsm_output_filename.setPlaceholderText("例如: update.iso")
-        config_layout.addRow(QLabel("保存文件名 (Save As):"), self.htmlsm_output_filename)
+        self.htmlsm_output_filename.setPlaceholderText("e.g. update.iso")
+        config_layout.addRow(QLabel("Save As:"), self.htmlsm_output_filename)
         
         config_group.setLayout(config_layout)
         layout.addWidget(config_group)
         
         # --- Appearance Section ---
-        appearance_group = QGroupBox("诱饵设置")
+        appearance_group = QGroupBox("Decoy Settings")
         appearance_layout = QFormLayout()
         appearance_layout.setSpacing(12)
 
         # Decoy Template Selector
         self.htmlsm_decoy_selector = QComboBox()
         self.htmlsm_decoy_selector.addItems([
-            "无 (None)",
-            "Microsoft 365 文档预览",
-            "Adobe PDF在线查看",
-            "文件下载中 (File Download)",
-            "自定义 (Custom)"
+            "None",
+            "Microsoft 365 Document Preview",
+            "Adobe PDF Online Viewer",
+            "File Download",
+            "Custom"
         ])
         self.htmlsm_decoy_selector.currentIndexChanged.connect(self.on_decoy_changed)
-        appearance_layout.addRow(QLabel("诱饵模板 (Decoy Template):"), self.htmlsm_decoy_selector)
+        appearance_layout.addRow(QLabel("Decoy Template:"), self.htmlsm_decoy_selector)
 
         # Custom Template Input
         self.htmlsm_custom_template_input = QLineEdit()
-        self.htmlsm_custom_template_input.setPlaceholderText("选择自定义HTML模板文件...")
-        self.htmlsm_custom_template_browse_btn = QPushButton("📂 浏览")
+        self.htmlsm_custom_template_input.setPlaceholderText("Select custom HTML template file...")
+        self.htmlsm_custom_template_browse_btn = QPushButton("📂 Browse")
         self.htmlsm_custom_template_browse_btn.setFixedWidth(80)
         self.htmlsm_custom_template_browse_btn.clicked.connect(self.select_custom_template)
         
         custom_layout = list_to_hbox([self.htmlsm_custom_template_input, self.htmlsm_custom_template_browse_btn])
-        self.htmlsm_custom_template_label = QLabel("模板文件 (Template File):")
+        self.htmlsm_custom_template_label = QLabel("Template File:")
         appearance_layout.addRow(self.htmlsm_custom_template_label, custom_layout)
         
         # Image URL
         self.htmlsm_image_url = QLineEdit()
-        self.htmlsm_image_url.setPlaceholderText("https://example.com/click_me.jpg (可选)")
-        self.htmlsm_image_url_label = QLabel("诱饵图片 URL (Image URL):")
+        self.htmlsm_image_url.setPlaceholderText("https://example.com/click_me.jpg (optional)")
+        self.htmlsm_image_url_label = QLabel("Decoy Image URL:")
         appearance_layout.addRow(self.htmlsm_image_url_label, self.htmlsm_image_url)
         
         # Evasion Checkbox
-        self.htmlsm_evasion_checkbox = QCheckBox("启用关键字混淆 (Enable Keyword Evasion)")
+        self.htmlsm_evasion_checkbox = QCheckBox("Enable Keyword Evasion")
         appearance_layout.addRow("", self.htmlsm_evasion_checkbox)
 
         appearance_group.setLayout(appearance_layout)
         layout.addWidget(appearance_group)
 
         # --- Packaging Section ---
-        packaging_group = QGroupBox("打包选项 (Output Packaging)")
+        packaging_group = QGroupBox("Output Packaging")
         packaging_layout = QFormLayout()
         packaging_layout.setSpacing(12)
         
         self.htmlsm_package_selector = QComboBox()
-        self.htmlsm_package_selector.addItems(["不打包 (None)", "ZIP 压缩", "加密 ZIP (Password ZIP)"])
+        self.htmlsm_package_selector.addItems(["None", "ZIP Archive", "Password-Protected ZIP"])
         self.htmlsm_package_selector.currentIndexChanged.connect(self.on_package_changed)
-        packaging_layout.addRow(QLabel("打包方式 (Format):"), self.htmlsm_package_selector)
+        packaging_layout.addRow(QLabel("Format:"), self.htmlsm_package_selector)
         
         self.htmlsm_zip_password = QLineEdit()
         self.htmlsm_zip_password.setEchoMode(QLineEdit.Password)
-        self.htmlsm_zip_password.setPlaceholderText("输入密码...")
-        self.htmlsm_zip_password_label = QLabel("解压密码 (Password):")
+        self.htmlsm_zip_password.setPlaceholderText("Enter password...")
+        self.htmlsm_zip_password_label = QLabel("Password:")
         packaging_layout.addRow(self.htmlsm_zip_password_label, self.htmlsm_zip_password)
         
         packaging_group.setLayout(packaging_layout)
@@ -162,12 +162,12 @@ class HTMLTab(QWidget):
         btn_layout = QVBoxLayout()
         btn_layout.setSpacing(12)
         
-        self.htmlsm_generate_btn = QPushButton("🚀 生成 HTML 文件")
+        self.htmlsm_generate_btn = QPushButton("🚀 Generate HTML File")
         self.htmlsm_generate_btn.setObjectName("primaryButton")
         self.htmlsm_generate_btn.clicked.connect(self.generate_html)
         btn_layout.addWidget(self.htmlsm_generate_btn)
         
-        self.htmlsm_open_btn = QPushButton("🔍 在浏览器中预览")
+        self.htmlsm_open_btn = QPushButton("🔍 Preview in Browser")
         self.htmlsm_open_btn.setEnabled(False)
         self.htmlsm_open_btn.clicked.connect(self.open_in_browser)
         btn_layout.addWidget(self.htmlsm_open_btn)
@@ -201,25 +201,25 @@ class HTMLTab(QWidget):
 
     def on_decoy_changed(self, index):
         decoy = self.htmlsm_decoy_selector.currentText()
-        is_custom = "Custom" in decoy or "自定义" in decoy
+        is_custom = "Custom" in decoy
         
         self.htmlsm_custom_template_label.setVisible(is_custom)
         self.htmlsm_custom_template_input.setVisible(is_custom)
         self.htmlsm_custom_template_browse_btn.setVisible(is_custom)
 
     def select_file(self):
-        path, _ = QFileDialog.getOpenFileName(self, "选择攻击载荷文件", "", "所有文件 (*)")
+        path, _ = QFileDialog.getOpenFileName(self, "Select Payload File", "", "All Files (*)")
         if path:
             self.htmlsm_file_input.setText(path)
 
     def select_custom_template(self):
-        path, _ = QFileDialog.getOpenFileName(self, "选择 HTML 模板文件", "", "HTML 文件 (*.html *.htm);;所有文件 (*)")
+        path, _ = QFileDialog.getOpenFileName(self, "Select HTML Template File", "", "HTML Files (*.html *.htm);;All Files (*)")
         if path:
             self.htmlsm_custom_template_input.setText(path)
 
     def on_package_changed(self, index):
         mode = self.htmlsm_package_selector.currentText()
-        is_password = "Password" in mode or "加密" in mode
+        is_password = "Password" in mode
         
         self.htmlsm_zip_password_label.setVisible(is_password)
         self.htmlsm_zip_password.setVisible(is_password)
@@ -238,20 +238,20 @@ class HTMLTab(QWidget):
         zip_password = self.htmlsm_zip_password.text().strip()
         
         # Map GUI text to mode string for generator
-        mode = "自动下载"
-        if "点击任意位置" in mode_text or "ClickAnywhere" in mode_text:
-            mode = "点击任意位置下载"
+        mode = "auto_download"
+        if "Click Anywhere" in mode_text:
+            mode = "click_anywhere"
         
         if not file_path:
-            self.show_error("请选择要嵌入的文件")
+            self.show_error("Please select a file to embed")
             return
         
         if not os.path.exists(file_path):
-             self.show_error("文件不存在")
+             self.show_error("File not found")
              return
         
         if not download_name:
-             self.show_error("请输入文件名")
+             self.show_error("Please enter a filename")
              return
 
         # Parse encoding params
@@ -259,11 +259,11 @@ class HTMLTab(QWidget):
             key_len = int(self.htmlsm_key_length.text().strip()) if self.htmlsm_key_length.isVisible() else 16
             chunk_size = int(self.htmlsm_chunk_size.text().strip()) if self.htmlsm_chunk_size.isVisible() else 4096
         except ValueError:
-            self.show_error("密钥长度或分块大小必须为整数")
+            self.show_error("Key length and chunk size must be integers")
             return
 
         try:
-            self.htmlsm_status.setText("状态：正在处理...")
+            self.htmlsm_status.setText("Status: Processing...")
             QApplication.processEvents()
 
             result = self.generator.generate(
@@ -292,12 +292,12 @@ class HTMLTab(QWidget):
             self.generated_extra_files = generated_files[1:]
 
             self.htmlsm_status.setObjectName("statusSuccess")
-            final_msg = f"✅ HTML 生成成功: {abs_path}"
+            final_msg = f"✅ HTML generated: {abs_path}"
 
             # Packaging Logic
-            if "None" not in package_mode and "不打包" not in package_mode:
+            if "None" not in package_mode:
                 if "Password" in package_mode and not zip_password:
-                     raise ValueError("Packaging Password is required.")
+                     raise ValueError("Packaging password is required.")
                 
                 html_name = os.path.basename(abs_path)
                 zip_name = os.path.splitext(html_name)[0] + ".zip"
@@ -305,7 +305,7 @@ class HTMLTab(QWidget):
                 zip_pwd = zip_password if "Password" in package_mode else None
                 zip_path = package_as_zip(generated_files, zip_name, password=zip_pwd)
                 
-                final_msg += f"\n📦 Boxed in ZIP: {zip_path}"
+                final_msg += f"\n📦 Packed in ZIP: {zip_path}"
             
             if self.generated_extra_files:
                 final_msg += f"\nExtra Files: {len(self.generated_extra_files)}"
@@ -319,7 +319,7 @@ class HTMLTab(QWidget):
                 self.window().statusBar().showMessage(f"Generated: {abs_path}")
         
         except Exception as e:
-            self.show_error(f"生成/打包失败: {str(e)}")
+            self.show_error(f"Generation/packaging failed: {str(e)}")
 
     def show_error(self, message):
         self.htmlsm_status.setObjectName("statusError")
@@ -330,7 +330,7 @@ class HTMLTab(QWidget):
         if self.generated_html_path and os.path.exists(self.generated_html_path):
             webbrowser.open_new_tab(f"file://{self.generated_html_path}")
         else:
-            self.show_error("文件不存在")
+            self.show_error("File not found")
 
 # Helper to create QHBoxLayout inline
 def list_to_hbox(widgets):

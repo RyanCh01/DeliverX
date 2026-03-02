@@ -41,33 +41,32 @@ class MainWindow(QMainWindow):
     def create_tabs(self):
         # 1. PDF Generator
         self.pdf_tab = PDFTab()
-        self.tabs.addTab(self.pdf_tab, "📄 PDF 生成")
+        self.tabs.addTab(self.pdf_tab, "📄 PDF Generator")
         
         # 2. HTML Smuggling
         self.html_tab = HTMLTab()
-        self.tabs.addTab(self.html_tab, "🌐 HTML 走私")
+        self.tabs.addTab(self.html_tab, "🌐 HTML Smuggling")
         
         # 3. SVG Smuggling
         self.svg_tab = SVGTab()
-        self.tabs.addTab(self.svg_tab, "🎨 SVG 生成")
+        self.tabs.addTab(self.svg_tab, "🎨 SVG Generator")
 
         # 4. LNK Generator
         self.lnk_tab = LNKTab()
-        self.tabs.addTab(self.lnk_tab, "🔗 LNK 生成")
+        self.tabs.addTab(self.lnk_tab, "🔗 LNK Generator")
 
         # 5. ISO Packager
         self.iso_tab = ISOTab()
-        self.tabs.addTab(self.iso_tab, "💿 ISO 打包")
+        self.tabs.addTab(self.iso_tab, "💿 ISO Packager")
 
         # 6. File Binder
         self.binder_tab = BinderTab()
-        self.tabs.addTab(self.binder_tab, "📦 文件捆绑")
+        self.tabs.addTab(self.binder_tab, "📦 File Binder")
 
         # 7. Canary Token
         self.canary_tab = CanaryTab()
-        self.tabs.addTab(self.canary_tab, "🔔 蜜标生成")
+        self.tabs.addTab(self.canary_tab, "🔔 Canary Token")
 
         # 8. File Spoofer
         self.file_spoof_tab = FileSpoofTab()
-        self.tabs.addTab(self.file_spoof_tab, "🕐 文件伪造")
-
+        self.tabs.addTab(self.file_spoof_tab, "🕐 File Spoofer")

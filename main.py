@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 DeliverX - Phishing & Social Engineering Toolkit
-钓鱼与社会工程学工具集
 Author: @RyanCh01
 GitHub: https://github.com/RyanCh01
 """

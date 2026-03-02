@@ -43,12 +43,12 @@ def package_as_zip(file_paths, output_name, password=None):
                     zf.write(file_path, os.path.basename(file_path))
         return zip_path
 
-    # 2. Password ZIP — 优先 pyminizip，回退 7z
+    # 2. Password ZIP — try pyminizip first, fall back to 7z
     files = [f for f in file_paths if os.path.exists(f)]
     if not files:
         raise ValueError("No valid files to package.")
 
-    # 方式1：pyminizip（pip install pyminizip）
+    # Method 1: pyminizip (pip install pyminizip)
     if HAS_PYMINIZIP:
         try:
             if len(files) == 1:
@@ -58,11 +58,11 @@ def package_as_zip(file_paths, output_name, password=None):
             if os.path.exists(zip_path):
                 return zip_path
         except Exception:
-            # pyminizip 失败，尝试回退到 7z
+            # pyminizip failed, try falling back to 7z
             if os.path.exists(zip_path):
                 os.remove(zip_path)
 
-    # 方式2：7z 系统命令
+    # Method 2: 7z system command
     if shutil.which("7z"):
         try:
             cmd = ["7z", "a", f"-p{password}", "-y", zip_path] + files
@@ -72,11 +72,11 @@ def package_as_zip(file_paths, output_name, password=None):
         except (FileNotFoundError, subprocess.CalledProcessError):
             pass
 
-    # 都失败了
+    # All methods failed
     raise Exception(
-        "无法创建加密 ZIP 文件。请安装以下任意一个工具：\n"
+        "Failed to create password-protected ZIP. Install one of the following:\n"
         "  • pip install pyminizip\n"
-        "  • 安装 7-Zip 并确保 7z 在系统 PATH 中"
+        "  • Install 7-Zip and ensure 7z is in your system PATH"
     )
 
 def is_7z_installed():

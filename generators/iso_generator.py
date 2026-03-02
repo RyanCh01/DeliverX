@@ -6,18 +6,18 @@ from config import OUTPUT_DIR
 
 def generate_iso(files_to_pack, volume_label="DOCUMENTS", output_filename="document.iso"):
     """
-    生成 ISO 9660 镜像文件
+    Generate an ISO 9660 image file.
 
-    参数:
-        files_to_pack: list of dict, 每个元素:
+    Args:
+        files_to_pack: list of dict, each element:
             {
-                "source_path": "本地文件绝对路径",
-                "name_in_iso": "在ISO中显示的文件名"
+                "source_path": "absolute path to local file",
+                "name_in_iso": "filename displayed in the ISO"
             }
-        volume_label: 卷标名称（挂载后显示的磁盘名）
-        output_filename: 输出ISO文件名
+        volume_label: volume label (disk name shown after mounting)
+        output_filename: output ISO filename
 
-    返回: (success: bool, message: str)
+    Returns: (success: bool, message: str)
     """
     try:
         return _generate_iso_pycdlib(files_to_pack, volume_label, output_filename)
@@ -29,11 +29,11 @@ def generate_iso(files_to_pack, volume_label="DOCUMENTS", output_filename="docum
     except Exception:
         pass
 
-    return False, "ISO 生成失败：请安装 pycdlib（pip install pycdlib）"
+    return False, "ISO generation failed: please install pycdlib (pip install pycdlib)"
 
 
 def _generate_iso_pycdlib(files_to_pack, volume_label, output_filename):
-    """使用 pycdlib 生成 ISO"""
+    """Generate ISO using pycdlib"""
     import pycdlib
 
     iso = pycdlib.PyCdlib()
@@ -44,7 +44,7 @@ def _generate_iso_pycdlib(files_to_pack, volume_label, output_filename):
         vol_ident=volume_label.upper()[:32]
     )
 
-    open_handles = []  # 跟踪打开的文件句柄，确保后续关闭
+    open_handles = []  # Track open file handles for cleanup
 
     try:
         for file_info in files_to_pack:
@@ -52,19 +52,19 @@ def _generate_iso_pycdlib(files_to_pack, volume_label, output_filename):
             name_in_iso = file_info["name_in_iso"]
 
             if not os.path.exists(source_path):
-                return False, f"文件不存在: {source_path}"
+                return False, f"File not found: {source_path}"
 
-            # ISO 9660 文件名（8.3格式，大写）
+            # ISO 9660 filename (8.3 format, uppercase)
             base_name = os.path.splitext(name_in_iso)[0][:8].upper()
             ext = os.path.splitext(name_in_iso)[1][:4].upper()
             if not ext:
                 ext = "."
             iso_name = f"/{base_name}{ext};1"
 
-            # Joliet 文件名（支持长文件名和中文）
+            # Joliet filename (supports long filenames and Unicode)
             joliet_name = f"/{name_in_iso}"
 
-            # Rock Ridge 文件名
+            # Rock Ridge filename
             rr_name = name_in_iso
 
             fp = open(source_path, 'rb')
@@ -91,20 +91,20 @@ def _generate_iso_pycdlib(files_to_pack, volume_label, output_filename):
     size_str = f"{file_size / 1024:.1f} KB" if file_size < 1048576 else f"{file_size / 1048576:.1f} MB"
 
     return True, (
-        f"ISO 镜像已生成: {output_path}\n"
-        f"文件大小: {size_str}\n"
-        f"卷标: {volume_label}\n"
-        f"包含 {len(files_to_pack)} 个文件\n\n"
-        f"使用说明:\n"
-        f"1. 将 ISO 文件通过邮件/网盘发送给目标\n"
-        f"2. 目标双击 ISO → Windows 自动挂载为虚拟光驱\n"
-        f"3. 挂载后的文件不携带 MOTW 标记，可绕过 SmartScreen\n"
-        f"4. 目标在虚拟光驱中看到文件并双击执行"
+        f"ISO image generated: {output_path}\n"
+        f"File size: {size_str}\n"
+        f"Volume label: {volume_label}\n"
+        f"Contains {len(files_to_pack)} file(s)\n\n"
+        f"Usage:\n"
+        f"1. Send the ISO file to the target via email or file sharing\n"
+        f"2. Target double-clicks ISO -> Windows auto-mounts as virtual drive\n"
+        f"3. Files inside the mounted ISO do not carry MOTW, bypassing SmartScreen\n"
+        f"4. Target sees the files in the virtual drive and double-clicks to execute"
     )
 
 
 def _generate_iso_system(files_to_pack, volume_label, output_filename):
-    """使用系统命令生成 ISO（Windows: mkisofs/genisoimage）"""
+    """Generate ISO using system commands (mkisofs/genisoimage)"""
     import subprocess
     import shutil
     import tempfile
@@ -115,7 +115,7 @@ def _generate_iso_system(files_to_pack, volume_label, output_filename):
             source = file_info["source_path"]
             dest_name = file_info["name_in_iso"]
             if not os.path.exists(source):
-                return False, f"文件不存在: {source}"
+                return False, f"File not found: {source}"
             shutil.copy2(source, os.path.join(temp_dir, dest_name))
 
         output_path = os.path.join(OUTPUT_DIR, output_filename)
@@ -131,9 +131,9 @@ def _generate_iso_system(files_to_pack, volume_label, output_filename):
                 if result.returncode == 0 and os.path.exists(output_path):
                     file_size = os.path.getsize(output_path)
                     size_str = f"{file_size/1024:.1f} KB" if file_size < 1048576 else f"{file_size/1048576:.1f} MB"
-                    return True, f"ISO 镜像已生成（{cmd_name}）: {output_path}\n文件大小: {size_str}"
+                    return True, f"ISO image generated ({cmd_name}): {output_path}\nFile size: {size_str}"
 
-        raise Exception("未找到 mkisofs 或 genisoimage")
+        raise Exception("mkisofs or genisoimage not found")
 
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
